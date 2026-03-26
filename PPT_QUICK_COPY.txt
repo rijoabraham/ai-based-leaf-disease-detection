@@ -1,0 +1,51 @@
+Slide 1
+Leaf Health Detector
+Interim Presentation 2
+Dates: 16/03/2026, 23/03/2026, 24/03/2026
+
+Slide 2
+Problem: Plant diseases reduce crop yield.
+Objective: AI web app for fast leaf disease detection.
+Benefit: Early diagnosis and better treatment decisions.
+
+Slide 3
+Workflow:
+Upload image -> preprocess -> CNN inference -> predicted class -> fetch disease + supplement data -> show result + market links.
+
+Slide 4
+Modules:
+Frontend (HTML templates)
+Backend (Flask app.py)
+AI Model (CNN.py, 39 classes)
+Knowledge Base (disease_info.csv, supplement_info.csv)
+
+Slide 5
+Dataset/Database:
+39 classes
+39 rows in disease_info.csv
+39 rows in supplement_info.csv
+Index-based mapping for final recommendation.
+
+Slide 6
+Algorithm:
+CNN image classifier
+Input 224x224 RGB
+Conv blocks + Dense layers
+Output: 39 classes
+
+Slide 7
+Results:
+End-to-end flow works.
+Upload -> prediction -> description -> prevention -> supplement link.
+Add screenshots from demo_images.
+
+Slide 8
+Conclusion:
+Project successfully integrates deep learning and web deployment for plant health support.
+
+Slide 9
+Future Enhancement:
+Top-3 predictions, confidence score, multilingual UI, database migration, severity estimation.
+
+Slide 10
+Demo + Thank You

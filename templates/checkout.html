@@ -1,0 +1,581 @@
+{% extends 'base.html' %}
+{% block pagetitle %}
+Checkout - Order Summary
+{% endblock pagetitle %}
+
+{% block body %}
+<style>
+  body {
+    background-color: #f7f9fc;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+
+  .checkout-container {
+    max-width: 800px;
+    margin: 1.5rem auto;
+    padding: 0 1rem;
+  }
+
+  .checkout-header {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    padding: 1rem;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    text-align: center;
+  }
+
+  .checkout-header h1 {
+    font-size: 1.6rem;
+    margin: 0 0 0.3rem 0;
+  }
+
+  .checkout-header p {
+    margin: 0;
+    font-size: 0.95rem;
+    opacity: 0.9;
+  }
+
+  .checkout-content {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .order-items {
+    background-color: white;
+    border-radius: 12px;
+    padding: 1.2rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+
+  .order-items h2 {
+    font-size: 1.3rem;
+    color: #2a3f54;
+    margin: 0 0 1.5rem 0;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #f0f0f0;
+  }
+
+  .cart-item-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid #f0f0f0;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+  }
+
+  .item-details {
+    flex: 1;
+  }
+
+  .item-name {
+    font-weight: 600;
+    color: #2a3f54;
+    font-size: 0.95rem;
+    margin-bottom: 0.3rem;
+  }
+
+  .item-quantity {
+    font-size: 0.85rem;
+    color: #666;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .qty-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: white;
+    padding: 0.3rem 0.5rem;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+  }
+
+  .qty-btn {
+    background: none;
+    border: none;
+    color: #28a745;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 0.9rem;
+    padding: 0 0.3rem;
+    transition: all 0.2s ease;
+  }
+
+  .qty-btn:hover {
+    color: #20c997;
+    transform: scale(1.2);
+  }
+
+  .qty-display {
+    font-weight: 600;
+    color: #333;
+    min-width: 20px;
+    text-align: center;
+  }
+
+  .remove-btn {
+    background-color: #ff4c4c;
+    color: white;
+    border: none;
+    padding: 0.3rem 0.6rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    transition: all 0.2s ease;
+  }
+
+  .remove-btn:hover {
+    background-color: #ff1a1a;
+  }
+
+  .item-price {
+    font-weight: 700;
+    color: #28a745;
+    font-size: 1.1rem;
+    text-align: right;
+    min-width: 100px;
+  }
+
+  .empty-checkout {
+    text-align: center;
+    padding: 2rem;
+    color: #666;
+  }
+
+  .empty-checkout p {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+  }
+
+  .checkout-summary {
+    background-color: white;
+    border-radius: 12px;
+    padding: 1.2rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+  }
+
+  .summary-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #2a3f54;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #f0f0f0;
+  }
+
+  .summary-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+    font-size: 0.95rem;
+    color: #666;
+  }
+
+  .summary-row.total {
+    font-weight: 700;
+    color: #2a3f54;
+    font-size: 1.2rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 2px solid #f0f0f0;
+    color: #28a745;
+  }
+
+  .price-value {
+    font-weight: 600;
+    color: #2a3f54;
+  }
+
+  .shipping-info {
+    background-color: #f0fdf4;
+    border-left: 4px solid #28a745;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    font-size: 0.85rem;
+    color: #4b4b4b;
+  }
+
+  .coupon-section {
+    margin-bottom: 1.5rem;
+  }
+
+  .coupon-input {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .coupon-input input {
+    flex: 1;
+    padding: 0.6rem;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 0.9rem;
+  }
+
+  .coupon-input button {
+    padding: 0.6rem 1rem;
+    background-color: #0d6efd;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+  }
+
+  .coupon-input button:hover {
+    background-color: #0b5ed7;
+  }
+
+  .checkout-buttons {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+  }
+
+  .continue-shopping-btn {
+    flex: 1;
+    padding: 1rem;
+    background-color: #f0f0f0;
+    color: #2a3f54;
+    border: none;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+  }
+
+  .continue-shopping-btn:hover {
+    background-color: #e0e0e0;
+  }
+
+  .place-order-btn {
+    flex: 1;
+    padding: 1rem;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+  }
+
+  .place-order-btn:hover {
+    background-color: #218838;
+    transform: scale(1.02);
+  }
+
+  .place-order-btn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+    transform: scale(1);
+  }
+
+  .delivery-options {
+    margin-bottom: 1.5rem;
+  }
+
+  .delivery-options h3 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #2a3f54;
+    margin-bottom: 0.75rem;
+  }
+
+  .delivery-option {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    margin-bottom: 0.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .delivery-option:hover {
+    border-color: #28a745;
+    background-color: #f8f9fa;
+  }
+
+  .delivery-option input[type="radio"] {
+    margin-right: 0.75rem;
+    cursor: pointer;
+  }
+
+  .delivery-label {
+    flex: 1;
+    cursor: pointer;
+  }
+
+  .delivery-time {
+    font-size: 0.8rem;
+    color: #999;
+  }
+
+  @media (max-width: 768px) {
+    .checkout-content {
+      grid-template-columns: 1fr;
+    }
+
+    .checkout-summary {
+      position: static;
+    }
+
+    .checkout-header h1 {
+      font-size: 1.5rem;
+    }
+  }
+</style>
+
+<div class="checkout-container">
+  <!-- Header -->
+  <div class="checkout-header">
+    <h1>📦 Order Summary & Checkout</h1>
+    <p>Review your items and complete your purchase</p>
+  </div>
+
+  <!-- Main Content -->
+  <div class="checkout-content">
+    <!-- Order Items -->
+    <div class="order-items">
+      <h2>Your Items</h2>
+      <div id="checkoutItems">
+        <div class="empty-checkout">
+          <p>🛒 Your cart is empty</p>
+          <p style="font-size: 0.9rem; color: #999;">Add items from the store to proceed with checkout</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Order Summary Sidebar -->
+    <div class="checkout-summary">
+      <div class="summary-title">💰 Order Summary</div>
+
+      <div class="shipping-info">
+        ℹ️ Shipping Policy: Free shipping on orders ₹500+. Orders below ₹500 have a ₹30 shipping fee.
+      </div>
+
+      <div class="delivery-options">
+        <h3>Delivery Option</h3>
+        <div class="delivery-option">
+          <input type="radio" id="standard" name="delivery" value="standard" checked>
+          <label for="standard" class="delivery-label">
+            <div>Standard Delivery</div>
+            <div class="delivery-time">5-7 business days</div>
+          </label>
+          <span class="price-value">FREE</span>
+        </div>
+        <div class="delivery-option">
+          <input type="radio" id="express" name="delivery" value="express">
+          <label for="express" class="delivery-label">
+            <div>Express Delivery</div>
+            <div class="delivery-time">2-3 business days</div>
+          </label>
+          <span class="price-value">+₹99</span>
+        </div>
+      </div>
+
+      <div class="coupon-section">
+        <h3 style="font-size: 0.9rem; font-weight: 600; color: #2a3f54; margin-bottom: 0.5rem;">Coupon Code</h3>
+        <div class="coupon-input">
+          <input type="text" id="couponCode" placeholder="Enter coupon code">
+          <button onclick="applyCoupon()">Apply</button>
+        </div>
+      </div>
+
+      <div class="summary-row">
+        <span>Subtotal</span>
+        <span class="price-value">₹<span id="subtotal">0</span></span>
+      </div>
+      <div class="summary-row">
+        <span>Shipping</span>
+        <span class="price-value">₹<span id="shipping">0</span></span>
+      </div>
+      <div class="summary-row">
+        <span>Discount</span>
+        <span class="price-value" style="color: #28a745;">-₹<span id="discount">0</span></span>
+      </div>
+      <div class="summary-row total">
+        <span>Total</span>
+        <span>₹<span id="total">0</span></span>
+      </div>
+
+      <div class="checkout-buttons">
+        <button class="continue-shopping-btn" onclick="continueShopping()">← Continue Shopping</button>
+        <button class="place-order-btn" id="placeOrderBtn" onclick="placeOrder()">Place Order</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  let cartData = {};
+  let deliveryCharge = 0;
+  let discount = 0;
+
+  function loadCheckoutData() {
+    // Get cart from localStorage
+    cartData = JSON.parse(localStorage.getItem('supplementCart')) || {};
+    
+    // Check if cart is empty
+    if (Object.keys(cartData).length === 0) {
+      document.getElementById('checkoutItems').innerHTML = `
+        <div class="empty-checkout">
+          <p>🛒 Your cart is empty</p>
+          <p style="font-size: 0.9rem; color: #999;">Add items from the store to proceed with checkout</p>
+        </div>
+      `;
+      document.getElementById('placeOrderBtn').disabled = true;
+      updateSummary();
+      return;
+    }
+
+    // Render items
+    document.getElementById('checkoutItems').innerHTML = '';
+    Object.values(cartData).forEach(item => {
+      const itemTotal = item.price * item.qty;
+      const itemDiv = document.createElement('div');
+      itemDiv.className = 'cart-item-row';
+      itemDiv.innerHTML = `
+        <div class="item-details">
+          <div class="item-name">${item.name}</div>
+          <div class="item-quantity">
+            Qty:
+            <div class="qty-controls">
+              <button class="qty-btn" onclick="decrementCheckoutQty('${item.id}')">−</button>
+              <span class="qty-display">${item.qty}</span>
+              <button class="qty-btn" onclick="incrementCheckoutQty('${item.id}')">+</button>
+            </div>
+            <button class="remove-btn" onclick="removeCheckoutItem('${item.id}')">🗑️ Remove</button>
+          </div>
+        </div>
+        <div class="item-price">₹${itemTotal}</div>
+      `;
+      document.getElementById('checkoutItems').appendChild(itemDiv);
+    });
+
+    updateSummary();
+  }
+
+  function updateSummary() {
+    const items = Object.values(cartData);
+    let subtotal = 0;
+
+    items.forEach(item => {
+      subtotal += item.price * item.qty;
+    });
+
+    // Calculate base shipping fee (₹30 if order < ₹500)
+    let baseShipping = subtotal < 500 ? 30 : 0;
+
+    // Calculate delivery charge
+    const deliveryOption = document.querySelector('input[name="delivery"]:checked').value;
+    deliveryCharge = deliveryOption === 'express' ? 99 : 0;
+
+    // Total shipping = base shipping + delivery option charge
+    const totalShipping = baseShipping + deliveryCharge;
+
+    // Subtotal
+    document.getElementById('subtotal').textContent = subtotal;
+    document.getElementById('shipping').textContent = totalShipping;
+    document.getElementById('discount').textContent = discount;
+
+    const total = subtotal + totalShipping - discount;
+    document.getElementById('total').textContent = total;
+
+    // Disable checkout if cart is empty
+    document.getElementById('placeOrderBtn').disabled = Object.keys(cartData).length === 0;
+  }
+
+  function applyCoupon() {
+    const couponCode = document.getElementById('couponCode').value.toUpperCase();
+    const subtotal = parseInt(document.getElementById('subtotal').textContent);
+
+    // Sample coupon codes
+    if (couponCode === 'SAVE10') {
+      discount = Math.floor(subtotal * 0.10);
+      alert('✓ Coupon applied! You saved ₹' + discount);
+    } else if (couponCode === 'SAVE20') {
+      discount = Math.floor(subtotal * 0.20);
+      alert('✓ Coupon applied! You saved ₹' + discount);
+    } else if (couponCode === 'FREESHIP' || couponCode === 'FREESHIP50') {
+      // Calculate base shipping fee
+      let baseShipping = subtotal < 500 ? 60 : 0;
+      discount = baseShipping;
+      alert('✓ Free shipping coupon applied! You saved ₹' + discount);
+    } else {
+      alert('❌ Invalid coupon code');
+      discount = 0;
+    }
+
+    updateSummary();
+  }
+
+  function continueShopping() {
+    window.location.href = '/market';
+  }
+
+  function incrementCheckoutQty(productId) {
+    if (cartData[productId]) {
+      cartData[productId].qty += 1;
+      localStorage.setItem('supplementCart', JSON.stringify(cartData));
+      loadCheckoutData();
+    }
+  }
+
+  function decrementCheckoutQty(productId) {
+    if (cartData[productId]) {
+      if (cartData[productId].qty > 1) {
+        cartData[productId].qty -= 1;
+        localStorage.setItem('supplementCart', JSON.stringify(cartData));
+        loadCheckoutData();
+      } else {
+        removeCheckoutItem(productId);
+      }
+    }
+  }
+
+  function removeCheckoutItem(productId) {
+    delete cartData[productId];
+    localStorage.setItem('supplementCart', JSON.stringify(cartData));
+    loadCheckoutData();
+  }
+
+  function placeOrder() {
+    const items = Object.values(cartData);
+    if (items.length === 0) {
+      alert('Your cart is empty!');
+      return;
+    }
+    
+    // Redirect to shipping and payment page
+    window.location.href = '/shipping-payment';
+  }
+
+  // Event listeners for delivery option change
+  document.querySelectorAll('input[name="delivery"]').forEach(radio => {
+    radio.addEventListener('change', updateSummary);
+  });
+
+  // Initialize on page load
+  window.addEventListener('load', loadCheckoutData);
+</script>
+
+{% endblock body %}

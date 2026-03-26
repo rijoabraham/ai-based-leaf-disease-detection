@@ -1,43 +1,938 @@
 {% extends 'base.html' %}
 {% block pagetitle %}
-Supplement Market
+Supplement Shopping Store
 {% endblock pagetitle %}
 
 {% block body %}
+<style>
+  body {
+    overflow-x: hidden;
+    background-color: #f7f9fc;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
 
-<br>
-<div class="row mb-5 text-center text-white">
-    <div class="col-lg-10 mx-auto">
-        <h1 class="display-4" style="padding-top: 2%;font-weight: 400;color: rgb(4, 54, 4);"><b>🛒Supplements🛒</b></h1>
-        <p class="lead" style="font-weight: 500;color: black;">Buy Supplements & Fertilizer at one place</p>
-    </div>
+  /* Mobile Notice */
+  .mobile {
+    display: none;
+  }
+
+  @media only screen and (max-width: 830px) {
+    .laptop {
+      display: none;
+    }
+    .mobile {
+      display: block;
+      padding: 5%;
+      text-align: center;
+      background-color: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      margin: 5% auto;
+    }
+    .mobile h1 {
+      color: #ff4c4c;
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+    .mobile p {
+      font-size: 1.1rem;
+      color: #333;
+      margin-bottom: 0.5rem;
+    }
+  }
+
+  /* Laptop/Desktop Layout */
+  .laptop {
+    margin: 0 auto;
+    max-width: 1400px;
+    padding: 0 1rem;
+  }
+
+  /* Header Bar */
+  .store-header {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    padding: 1.25rem 1.5rem;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .store-header h1 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  .cart-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+
+  .cart-badge {
+    background-color: #ff4c4c;
+    color: white;
+    font-weight: 700;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.95rem;
+  }
+
+  .cart-summary {
+    background-color: rgba(255, 255, 255, 0.2);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-weight: 500;
+  }
+
+  .view-cart-btn {
+    background-color: white;
+    color: #28a745;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .view-cart-btn:hover {
+    background-color: #f0f0f0;
+    transform: scale(1.05);
+  }
+
+  .track-order-btn {
+    background-color: #ffc107;
+    color: #333;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .track-order-btn:hover {
+    background-color: #ffb300;
+    transform: scale(1.05);
+  }
+
+  .hero-section {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background-color: #f0fdf4;
+    border-radius: 12px;
+  }
+
+  .hero-section h2 {
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: #2a3f54;
+    margin-bottom: 0.5rem;
+  }
+
+  .hero-section p {
+    font-size: 0.95rem;
+    color: #4b4b4b;
+  }
+
+  .filters-section {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .filter-btn {
+    padding: 0.6rem 1.2rem;
+    border: 2px solid #28a745;
+    background-color: white;
+    color: #28a745;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+  }
+
+  .filter-btn:hover,
+  .filter-btn.active {
+    background-color: #28a745;
+    color: white;
+  }
+
+  .search-box {
+    padding: 0.7rem 1.2rem;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .search-box:focus {
+    outline: none;
+    border-color: #28a745;
+    box-shadow: 0 0 8px rgba(40, 167, 69, 0.3);
+  }
+
+  .card-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .product-card {
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    padding: 1rem;
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 2px solid transparent;
+  }
+
+  .product-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15);
+    border-color: #28a745;
+  }
+
+  .product-card img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 0.75rem;
+  }
+
+  .product-card .image-placeholder {
+    display: none;
+    width: 100%;
+    height: 180px;
+    border-radius: 8px;
+    margin-bottom: 0.75rem;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    text-align: center;
+    padding: 0.75rem;
+    box-sizing: border-box;
+    flex-direction: column;
+    gap: 0.35rem;
+    font-size: 0.9rem;
+  }
+
+  .product-card img.broken + .image-placeholder {
+    display: flex;
+  }
+
+  .product-card .image-placeholder.fertilizer {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  }
+
+  .product-card .image-placeholder.fungicide {
+    background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+  }
+
+  .product-card .image-placeholder.supplement {
+    background: linear-gradient(135deg, #0d6efd 0%, #0dcaf0 100%);
+  }
+
+  .product-type {
+    font-weight: 600;
+    font-size: 0.75rem;
+    margin-bottom: 0.35rem;
+    display: inline-block;
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+  }
+
+  .product-type.healthy {
+    color: #28a745;
+    background-color: #d4edda;
+  }
+
+  .product-type.diseased {
+    color: #dc3545;
+    background-color: #f8d7da;
+  }
+
+  .disease-name {
+    font-weight: 500;
+    color: #666;
+    font-size: 0.75rem;
+    margin: 0.35rem 0;
+  }
+
+  .product-name {
+    font-weight: 600;
+    color: #2a3f54;
+    font-size: 0.85rem;
+    margin: 0.35rem 0;
+    min-height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .price-section {
+    margin: 0.75rem 0;
+    padding: 0.75rem;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+  }
+
+  .price {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #28a745;
+    margin-bottom: 0.3rem;
+  }
+
+  .discount-price {
+    font-size: 0.85rem;
+    color: #999;
+    text-decoration: line-through;
+    margin-right: 0.5rem;
+  }
+
+  .quantity-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin: 0.75rem 0;
+  }
+
+  .quantity-btn {
+    width: 30px;
+    height: 30px;
+    border: 1px solid #ddd;
+    background-color: white;
+    cursor: pointer;
+    border-radius: 4px;
+    font-weight: 600;
+    color: #333;
+    transition: all 0.2s ease;
+  }
+
+  .quantity-btn:hover {
+    background-color: #28a745;
+    color: white;
+    border-color: #28a745;
+  }
+
+  .quantity-display {
+    font-weight: 600;
+    color: #333;
+    min-width: 30px;
+    text-align: center;
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+  }
+
+  .action-buttons button {
+    flex: 1;
+  }
+
+  .add-cart-btn {
+    background-color: #28a745;
+    color: white;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.8rem;
+  }
+
+  .add-cart-btn:hover {
+    background-color: #218838;
+    transform: scale(1.05);
+  }
+
+  .add-cart-btn.added {
+    background-color: #20c997;
+  }
+
+  .buy-btn {
+    background-color: #0d6efd;
+    color: white;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 0.8rem;
+  }
+
+  .buy-btn:hover {
+    background-color: #0b5ed7;
+    text-decoration: none;
+    color: white;
+  }
+
+  .cart-sidebar {
+    position: fixed;
+    right: -450px;
+    top: 0;
+    width: 420px;
+    height: 100vh;
+    background-color: white;
+    box-shadow: -4px 0 12px rgba(0, 0, 0, 0.15);
+    transition: right 0.3s ease;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+  }
+
+  .cart-sidebar.open {
+    right: 0;
+  }
+
+  .cart-header {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    padding: 1.25rem;
+    font-size: 1.3rem;
+    font-weight: 700;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .close-cart {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0;
+  }
+
+  .cart-items-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+  }
+
+  .cart-item {
+    background-color: #f8f9fa;
+    padding: 0.75rem;
+    margin-bottom: 0.75rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    border-left: 4px solid #28a745;
+  }
+
+  .cart-item-name {
+    font-weight: 600;
+    color: #2a3f54;
+    margin-bottom: 0.3rem;
+  }
+
+  .cart-item-qty {
+    color: #666;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .qty-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: white;
+    padding: 0.3rem 0.5rem;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+  }
+
+  .qty-btn {
+    background: none;
+    border: none;
+    color: #28a745;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 1rem;
+    padding: 0 0.3rem;
+    transition: all 0.2s ease;
+  }
+
+  .qty-btn:hover {
+    color: #20c997;
+    transform: scale(1.2);
+  }
+
+  .qty-display {
+    font-weight: 600;
+    color: #333;
+    min-width: 20px;
+    text-align: center;
+  }
+
+  .cart-item-price {
+    font-weight: 700;
+    color: #28a745;
+    margin-bottom: 0.5rem;
+  }
+
+  .remove-item-btn {
+    background-color: #ff4c4c;
+    color: white;
+    border: none;
+    padding: 0.3rem 0.6rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.7rem;
+    margin-top: 0.3rem;
+    transition: all 0.2s ease;
+  }
+
+  .remove-item-btn:hover {
+    background-color: #ff1a1a;
+  }
+
+  .empty-cart {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: #666;
+  }
+
+  .cart-footer {
+    border-top: 2px solid #eee;
+    padding: 1rem;
+    background-color: #f8f9fa;
+  }
+
+  .cart-total {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+  }
+
+  .checkout-btn {
+    width: 100%;
+    background-color: #28a745;
+    color: white;
+    padding: 0.8rem;
+    border: none;
+    border-radius: 6px;
+    font-weight: 700;
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+  }
+
+  .checkout-btn:hover {
+    background-color: #218838;
+    transform: scale(1.02);
+  }
+
+  .checkout-btn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+    transform: scale(1);
+  }
+
+  .overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.3);
+    z-index: 999;
+  }
+
+  .overlay.show {
+    display: block;
+  }
+
+  @media (max-width: 768px) {
+    .store-header {
+      flex-direction: column;
+      gap: 1rem;
+      text-align: center;
+    }
+
+    .store-header h1 {
+      font-size: 1.3rem;
+    }
+
+    .cart-info {
+      width: 100%;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .track-order-btn,
+    .view-cart-btn {
+      flex: 1;
+      min-width: 120px;
+    }
+
+    .card-container {
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .hero-section h2 {
+      font-size: 1.3rem;
+    }
+
+    .product-card {
+      padding: 0.75rem;
+    }
+
+    .product-card img {
+      height: 200px;
+    }
+
+    .cart-sidebar {
+      width: 100%;
+      right: -100%;
+    }
+
+    .filters-section {
+      flex-direction: column;
+    }
+
+    .search-box {
+      min-width: auto;
+      width: 100%;
+    }
+  }
+</style>
+
+<!-- Overlay for cart -->
+<div class="overlay" id="cartOverlay"></div>
+
+<!-- Mobile Notice -->
+<div class="mobile">
+  <h1>Mobile Unsupported</h1>
+  <p>Please open this site on a laptop or PC for the best experience.</p>
+  <p>Thank you!</p>
 </div>
-<div class="row p-3">
+
+<!-- Laptop/Desktop Layout -->
+<div class="laptop">
+  <!-- Store Header -->
+  <div class="store-header">
+    <div>
+      <h1>🛒 Supplement Shopping Store</h1>
+    </div>
+    <div class="cart-info">
+      <div class="cart-badge">Items: <span id="cartCount">0</span></div>
+      <button class="track-order-btn" onclick="window.location.href='/track-order'">📦 Track Order</button>
+      <button class="view-cart-btn" onclick="toggleCart()">View Cart →</button>
+    </div>
+  </div>
+
+  <!-- Hero Section -->
+  <div class="hero-section">
+    <h2>Quality Supplements & Fertilizers</h2>
+    <p>Find the perfect products to keep your plants healthy and disease-free</p>
+  </div>
+
+  <!-- Filters and Search -->
+  <div class="filters-section">
+    <input type="text" class="search-box" id="searchBox" placeholder="Search products...">
+    <button class="filter-btn active" onclick="filterProducts('all')">All Products</button>
+    <button class="filter-btn" onclick="filterProducts('healthy')">Fertilizers</button>
+    <button class="filter-btn" onclick="filterProducts('diseased')">Supplements</button>
+  </div>
+
+  <!-- Product Grid -->
+  <div class="card-container" id="productContainer">
     {% for index in range(0,supplement_name | length) %}
     {% if index != 4 %}
-    <div class="col">
-        <div class=" p-5 bg-white shadow rounded-lg" style="height: 95%;">
-        <center>
-            {% if index==3 or index==5 or index==7 or index==11 or index==15 or index==18 or index==20 or
-            index==23 or
-            index==24 or index==25 or index==28 or index==38 %}
-            <h5>Fertilizer<b style="color: green;"> (Healthy):</b></h5>
-            {% else %}
-            <h5>Supplements<b style="color: red;"> (Diseased):</b></h5>
-            {% endif %}
-            <br>
-            <img src={{supplement_image[index]}} width="200" height="250">
-            <br>
-            <br>
-            <h6>For {{disease[index]}}</h6>
-            <p>{{supplement_name[index]}}</p>
+    <div class="product-card" data-product-id="{{ index }}" data-type="{% if index==3 or index==5 or index==7 or index==11 or index==15 or index==18 or index==20 or index==23 or index==24 or index==25 or index==28 or index==38 %}healthy{% else %}diseased{% endif %}">
+      <div class="product-type {% if index==3 or index==5 or index==7 or index==11 or index==15 or index==18 or index==20 or index==23 or index==24 or index==25 or index==28 or index==38 %}healthy{% else %}diseased{% endif %}">
+        {% if index==3 or index==5 or index==7 or index==11 or index==15 or index==18 or index==20 or index==23 or index==24 or index==25 or index==28 or index==38 %}
+        ✓ Fertilizer
+        {% else %}
+        ⚠ Supplement
+        {% endif %}
+      </div>
+      
+      <img src="{{supplement_image[index]}}" alt="{{supplement_name[index]}}" onerror="this.classList.add('broken')">
+      <div class="image-placeholder {% if index==3 or index==5 or index==7 or index==11 or index==15 or index==18 or index==20 or index==23 or index==24 or index==25 or index==28 or index==38 %}fertilizer{% else %}fungicide{% endif %}">
+        <span>{% if index==3 or index==5 or index==7 or index==11 or index==15 or index==18 or index==20 or index==23 or index==24 or index==25 or index==28 or index==38 %}🌱{% else %}⚗️{% endif %}</span>
+        <span>Product Image</span>
+      </div>
+      
+      <div class="disease-name">For: {{disease[index]}}</div>
+      <div class="product-name">{{supplement_name[index]}}</div>
+      
+      <div class="price-section">
+        <div class="price">₹{{prices[index]}}</div>
+        <div style="font-size: 0.75rem; color: #999;">Free shipping on orders above ₹500</div>
+      </div>
 
-            <a target="_blank" href={{buy[index]}}><button type="button" class="btn btn-success"
-                    style="background-color: #05380b;">Buy Product</button></a>
-        </center>
+      <div class="action-buttons">
+        <button type="button" class="add-cart-btn" data-product-id="{{ index }}" data-product-name="{{supplement_name[index]}}" data-product-price="{{prices[index]}}" onclick="addToCart(event)">Add to Cart</button>
+        <button type="button" class="buy-btn" data-product-id="{{ index }}" data-product-name="{{supplement_name[index]}}" data-product-price="{{prices[index]}}" onclick="buyNow(event)">Buy Now</button>
+      </div>
     </div>
+    {% endif %}
+    {% endfor %}
+  </div>
 </div>
-{% endif %}
-{% endfor %}
+
+<!-- Shopping Cart Sidebar -->
+<div class="cart-sidebar" id="cartSidebar">
+  <div class="cart-header">
+    Shopping Cart
+    <button class="close-cart" onclick="toggleCart()">✕</button>
+  </div>
+  
+  <div class="cart-items-container" id="cartItemsContainer">
+    <div class="empty-cart" id="emptyCartMsg">
+      <p style="font-size: 2rem; margin-bottom: 0.5rem;">🛒</p>
+      <p>Your cart is empty</p>
+      <p style="font-size: 0.85rem; color: #999;">Add items to get started!</p>
+    </div>
+  </div>
+
+  <div class="cart-footer">
+    <div class="cart-total">
+      <span>Subtotal:</span>
+      <span>₹<span id="cartSubtotal">0</span></span>
+    </div>
+    <div class="cart-total" style="font-size: 0.9rem; color: #666;">
+      <span>Shipping:</span>
+      <span id="cartShipping">FREE</span>
+    </div>
+    <div class="cart-total" style="border-top: 1px solid #ddd; padding-top: 0.75rem; margin-top: 0.5rem;">
+      <span>Total:</span>
+      <span>₹<span id="cartTotalPrice">0</span></span>
+    </div>
+    <button class="checkout-btn" id="checkoutBtn" onclick="proceedToCheckout()" disabled>Proceed to Checkout</button>
+  </div>
 </div>
+
+<!-- Cart Management Script -->
+<script>
+  // Initialize cart from localStorage
+  let cart = JSON.parse(localStorage.getItem('supplementCart')) || {};
+  
+  function updateCartUI() {
+    const container = document.getElementById('cartItemsContainer');
+    const totalPrice = document.getElementById('cartTotalPrice');
+    const cartCount = document.getElementById('cartCount');
+    const checkoutBtn = document.getElementById('checkoutBtn');
+    const cartSubtotal = document.getElementById('cartSubtotal');
+    const cartShipping = document.getElementById('cartShipping');
+    
+    const cartItems = Object.values(cart);
+    const totalItems = cartItems.reduce((sum, item) => sum + item.qty, 0);
+    cartCount.textContent = totalItems;
+    
+    if (totalItems === 0) {
+      container.innerHTML = '<div class="empty-cart"><p style="font-size: 2rem; margin-bottom: 0.5rem;">🛒</p><p>Your cart is empty</p><p style="font-size: 0.85rem; color: #999;">Add items to get started!</p></div>';
+      cartSubtotal.textContent = '0';
+      cartShipping.textContent = 'FREE';
+      totalPrice.textContent = '0';
+      checkoutBtn.disabled = true;
+    } else {
+      let subtotal = 0;
+      container.innerHTML = '';
+      
+      cartItems.forEach(item => {
+        const itemTotal = item.price * item.qty;
+        subtotal += itemTotal;
+        
+        const cartItemDiv = document.createElement('div');
+        cartItemDiv.className = 'cart-item';
+        cartItemDiv.innerHTML = `
+          <div class="cart-item-name">${item.name}</div>
+          <div class="cart-item-qty">
+            Qty:
+            <div class="qty-controls">
+              <button class="qty-btn" onclick="decrementQty('${item.id}')">−</button>
+              <span class="qty-display">${item.qty}</span>
+              <button class="qty-btn" onclick="incrementQty('${item.id}')">+</button>
+            </div>
+          </div>
+          <div class="cart-item-price">₹${itemTotal}</div>
+          <button class="remove-item-btn" onclick="removeFromCart('${item.id}')">🗑️ Remove</button>
+        `;
+        container.appendChild(cartItemDiv);
+      });
+      
+      // Calculate shipping fee
+      let shippingFee = 0;
+      if (subtotal < 500) {
+        shippingFee = 30;
+        cartShipping.textContent = '₹30';
+      } else {
+        cartShipping.textContent = 'FREE';
+      }
+      
+      cartSubtotal.textContent = subtotal;
+      const total = subtotal + shippingFee;
+      totalPrice.textContent = total;
+      checkoutBtn.disabled = false;
+    }
+    
+    // Save to localStorage
+    localStorage.setItem('supplementCart', JSON.stringify(cart));
+  }
+  
+  function addToCart(event) {
+    const btn = event.target;
+    const productId = btn.dataset.productId;
+    const productName = btn.dataset.productName;
+    const price = parseInt(btn.dataset.productPrice);
+    
+    if (cart[productId]) {
+      cart[productId].qty += 1;
+    } else {
+      cart[productId] = {
+        id: productId,
+        name: productName,
+        price: price,
+        qty: 1
+      };
+    }
+    
+    // Visual feedback
+    btn.textContent = '✓ Added';
+    btn.classList.add('added');
+    setTimeout(() => {
+      btn.textContent = 'Add to Cart';
+      btn.classList.remove('added');
+    }, 1500);
+    
+    updateCartUI();
+  }
+  
+  function removeFromCart(productId) {
+    delete cart[productId];
+    updateCartUI();
+  }
+  
+  function incrementQty(productId) {
+    if (cart[productId]) {
+      cart[productId].qty += 1;
+      updateCartUI();
+    }
+  }
+  
+  function decrementQty(productId) {
+    if (cart[productId]) {
+      if (cart[productId].qty > 1) {
+        cart[productId].qty -= 1;
+        updateCartUI();
+      } else {
+        removeFromCart(productId);
+      }
+    }
+  }
+  
+  function toggleCart() {
+    document.getElementById('cartSidebar').classList.toggle('open');
+    document.getElementById('cartOverlay').classList.toggle('show');
+  }
+  
+  function proceedToCheckout() {
+    const cartItems = Object.values(cart);
+    if (cartItems.length === 0) {
+      alert('Your cart is empty!');
+      return;
+    }
+    
+    // Redirect to checkout page
+    window.location.href = '/checkout';
+  }
+
+  function buyNow(event) {
+    // Add the clicked product to cart first
+    const btn = event.target;
+    const productId = btn.dataset.productId;
+    const productName = btn.dataset.productName;
+    const price = parseInt(btn.dataset.productPrice);
+    
+    // Add or update in cart
+    if (cart[productId]) {
+      cart[productId].qty += 1;
+    } else {
+      cart[productId] = {
+        id: productId,
+        name: productName,
+        price: price,
+        qty: 1
+      };
+    }
+    
+    // Save to localStorage
+    localStorage.setItem('supplementCart', JSON.stringify(cart));
+    
+    // Redirect to checkout page
+    window.location.href = '/checkout';
+  }
+  
+  function filterProducts(type) {
+    const cards = document.querySelectorAll('.product-card');
+    const buttons = document.querySelectorAll('.filter-btn');
+    
+    buttons.forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    cards.forEach(card => {
+      if (type === 'all' || card.dataset.type === type) {
+        card.style.display = '';
+      } else {
+        card.style.display = 'none';
+      }
+    });
+  }
+  
+  // Search functionality
+  document.getElementById('searchBox').addEventListener('keyup', function(e) {
+    const searchTerm = e.target.value.toLowerCase();
+    const cards = document.querySelectorAll('.product-card');
+    
+    cards.forEach(card => {
+      const productName = card.querySelector('.product-name').textContent.toLowerCase();
+      const diseaseName = card.querySelector('.disease-name').textContent.toLowerCase();
+      
+      if (productName.includes(searchTerm) || diseaseName.includes(searchTerm)) {
+        card.style.display = '';
+      } else {
+        card.style.display = 'none';
+      }
+    });
+  });
+  
+  // Close cart when clicking overlay
+  document.getElementById('cartOverlay').addEventListener('click', toggleCart);
+  
+  // Initialize UI on page load
+  updateCartUI();
+</script>
+
 {% endblock body %}

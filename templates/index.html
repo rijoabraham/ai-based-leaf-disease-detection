@@ -5,79 +5,279 @@ AI Engine
 {% endblock pagetitle %}
 
 {% block body %}
-<div>
-    <div class="container">
-        <!-- Header -->
-        <div class="row mb-5 text-center text-white">
-            <div class="col-lg-10 mx-auto">
-                <h1 class="display-4" style="padding-top: 2%;font-weight: 400;color: rgb(4, 54, 4);"><b>🍀AI Engine🍀</b></h1>
-                <p class="lead" style="font-weight: 500;color: black;">Let AI Engine Help You Detect Disease</p>
-            </div>
-        </div>
+<style>
+  body {
+    overflow-x: hidden;
+    background-color: #f7f9fc;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
 
-        <div class="row">
-            <!-- Left: Info -->
-            <div class="col mx-auto">
-                <div class="p-5 bg-white shadow rounded-lg" style="height: 95%;">
-                    <h5><b>Why Detect Plant Disease?</b></h5>
-                    <p>Plant diseases affect crop yield and quality. Early and accurate detection enables timely treatment, saving resources and maximizing productivity.</p>
-                    <div class="text-center mt-4">
-                        <button onclick="googleTranslateElementInit()" class="btn btn-outline-primary">Translate Page</button>
-                    </div>
-                    <div id="google_translate_element" style="display: none; text-align: center; margin-top: 20px;"></div>
-                </div>
-            </div>
+  /* Mobile Notice */
+  .mobile {
+    display: none;
+  }
 
-            <!-- Middle: Upload -->
-            <div class="col mx-auto">
-                <div class="p-5 bg-white shadow rounded-lg" style="height: 95%;">
-                    <form action="/submit" method="POST" enctype="multipart/form-data" onsubmit="return validateImage();">
-                        <!-- Upload Section -->
-                        <div class="custom-file overflow-hidden mb-4" style="text-align: center;">
-                            <input type="file" id="actual-btn" hidden name="image" accept="image/*" />
-                            <label for="actual-btn" style="cursor: pointer; background-color: #198754; color: white; padding: 8px 16px; border-radius: 4px;">Choose or Drag File</label>
-                            &nbsp;
-                            <label id="camera-btn" style="cursor: pointer; background-color: #0d6efd; color: white; padding: 8px 16px; border-radius: 4px;">Open Camera</label>
-                            <br><br>
-                            <span id="file-chosen" style="font-weight: bold;">No file chosen</span>
-                        </div>
+  @media only screen and (max-width: 1024px) {
+    .laptop {
+      display: none;
+    }
+    .mobile {
+      display: block;
+      padding: 5%;
+      text-align: center;
+      background-color: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      margin: 5% auto;
+    }
+    .mobile h1 {
+      color: #ff4c4c;
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+    .mobile p {
+      font-size: 1.1rem;
+      color: #333;
+      margin-bottom: 0.5rem;
+    }
+  }
 
-                        <!-- Camera Feed -->
-                        <div id="camera-container" style="display: none; text-align: center;">
-                            <video id="camera-feed" width="300" height="225" autoplay style="border: 1px solid #ccc;"></video>
-                            <br><br>
-                            <button type="button" id="capture-btn" class="btn btn-primary">Capture Photo</button>
-                        </div>
+  /* Laptop/Desktop Layout */
+  .laptop {
+    margin: 1rem auto;
+    max-width: 1200px;
+    padding: 0 1rem;
+  }
 
-                        <!-- Preview -->
-                        <div style="text-align: center; margin-top: 20px;">
-                            <img id="preview" src="#" alt="Image Preview" style="display: none; max-width: 90%; border: 2px solid #aaa; border-radius: 8px;" />
-                        </div>
+  .hero-section {
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
 
-                        <h6 class="text-center mb-4 text-muted mt-3">Simply upload your plant's leaf image and watch the AI work its magic.</h6>
-                        <center><button type="submit" class="btn btn-outline-success">Submit</button></center>
-                    </form>
-                </div>
-            </div>
+  .hero-section h1 {
+    font-size: 2rem;
+    font-weight: 600;
+    color: #2a3f54;
+    margin-bottom: 0.5rem;
+  }
 
-            <!-- Right: Tips -->
-            <div class="col mx-auto">
-                <div class="p-5 bg-white shadow rounded-lg" style="height: 95%;">
-                    <h5><b>Prevent Plant Disease:</b></h5>
-                    <ol>
-                        <li>Use clean tools</li>
-                        <li>Inspect plants regularly</li>
-                        <li>Use quality soil and fertilizers</li>
-                        <li>Ensure good air circulation</li>
-                        <li>Remove infected leaves</li>
-                    </ol>
-                    <a target="_blank" href="https://www.thespruce.com/prevent-plant-diseases-in-your-garden-2539511">
-                        <button type="button" class="btn btn-outline-success">More Info</button>
-                    </a>
-                </div>
-            </div>
-        </div>
+  .hero-section p {
+    font-size: 0.95rem;
+    color: #4b4b4b;
+    margin-bottom: 1rem;
+  }
+
+  .content-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .info-card {
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    padding: 1.25rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .info-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  }
+
+  .info-card h5 {
+    font-size: 1.1rem;
+    color: #2a3f54;
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+  }
+
+  .info-card p, .info-card li {
+    color: #555;
+    line-height: 1.5;
+    font-size: 0.8rem;
+  }
+
+  .info-card ol {
+    padding-left: 1.25rem;
+  }
+
+  .upload-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .button-group {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .btn-custom {
+    cursor: pointer;
+    background-color: #28a745;
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    font-size: 0.8rem;
+  }
+
+  .btn-custom:hover {
+    background-color: #218838;
+  }
+
+  .btn-camera {
+    background-color: #0d6efd;
+  }
+
+  .btn-camera:hover {
+    background-color: #0b5ed7;
+  }
+
+  .btn-submit {
+    background-color: #28a745;
+    margin-top: 0.75rem;
+  }
+
+  .btn-submit:hover {
+    background-color: #218838;
+  }
+
+  .file-name {
+    font-weight: 600;
+    color: #2a3f54;
+    margin: 0.75rem 0;
+    font-size: 0.85rem;
+  }
+
+  #camera-container {
+    text-align: center;
+    margin: 1rem 0;
+  }
+
+  #camera-feed {
+    border-radius: 8px;
+    border: 2px solid #ddd;
+    max-width: 180px;
+    display: block;
+    margin: 1rem auto;
+  }
+
+  #preview {
+    border-radius: 8px;
+    border: 2px solid #ddd;
+    max-width: 180px;
+    margin: 1rem auto;
+    display: block;
+  }
+
+  .translate-btn {
+    background-color: #0d6efd;
+  }
+
+  .translate-btn:hover {
+    background-color: #0b5ed7;
+  }
+
+  .more-info-btn {
+    background-color: #28a745;
+  }
+
+  .more-info-btn:hover {
+    background-color: #218838;
+  }
+
+  @media (max-width: 768px) {
+    .content-container {
+      grid-template-columns: 1fr;
+    }
+
+    .hero-section h1 {
+      font-size: 2rem;
+    }
+
+    .button-group {
+      flex-direction: column;
+    }
+
+    .btn-custom {
+      width: 100%;
+    }
+  }
+</style>
+
+<!-- Mobile Notice -->
+<div class="mobile">
+  <h1>Desktop View Recommended</h1>
+  <p>This AI Engine works best on a laptop or desktop for the best experience.</p>
+  <p>Thank you!</p>
+</div>
+
+<!-- Laptop/Desktop Layout -->
+<div class="laptop">
+  <div class="hero-section">
+    <h1><b>🍀 AI Engine 🍀</b></h1>
+    <p>Upload your plant's leaf image and let our AI detect any diseases</p>
+  </div>
+
+  <div class="content-container">
+    <!-- Left: Info -->
+    <div class="info-card">
+      <h5>Why Detect Plant Disease?</h5>
+      <p>Plant diseases affect crop yield and quality. Early and accurate detection enables timely treatment, saving resources and maximizing productivity. Our AI engine provides quick and reliable diagnosis for your plants.</p>
+      <div style="text-align: center; margin-top: 1.5rem;">
+        <button onclick="googleTranslateElementInit()" class="btn-custom translate-btn">Translate Page</button>
+      </div>
+      <div id="google_translate_element" style="display: none; text-align: center; margin-top: 1rem;"></div>
     </div>
+
+    <!-- Middle: Upload -->
+    <div class="info-card">
+      <h5>Upload Your Image</h5>
+      <form action="/submit" method="POST" enctype="multipart/form-data" onsubmit="return validateImage();" class="upload-form">
+        <div class="button-group">
+          <input type="file" id="actual-btn" hidden name="image" accept="image/*" />
+          <label for="actual-btn" class="btn-custom">Choose File</label>
+          <label id="camera-btn" class="btn-custom btn-camera">Open Camera</label>
+        </div>
+
+        <span id="file-chosen" class="file-name">No file chosen</span>
+
+        <!-- Camera Feed -->
+        <div id="camera-container" style="display: none;">
+          <video id="camera-feed" width="100%" height="auto" autoplay style="max-width: 300px;"></video>
+          <br><br>
+          <button type="button" id="capture-btn" class="btn-custom">Capture Photo</button>
+        </div>
+
+        <!-- Preview -->
+        <img id="preview" src="#" alt="Image Preview" style="display: none;" />
+
+        <p style="color: #888; font-size: 0.9rem; margin: 1rem 0;">Simply upload your plant's leaf image and watch the AI work its magic.</p>
+        <button type="submit" class="btn-custom btn-submit">Submit for Analysis</button>
+      </form>
+    </div>
+
+    <!-- Right: Tips -->
+    <div class="info-card">
+      <h5>Prevent Plant Disease</h5>
+      <ol>
+        <li>Use clean tools</li>
+        <li>Inspect plants regularly</li>
+        <li>Use quality soil and fertilizers</li>
+        <li>Ensure good air circulation</li>
+        <li>Remove infected leaves</li>
+      </ol>
+    
+    </div>
+  </div>
 </div>
 
 <!-- Google Translate Widget -->
@@ -85,11 +285,9 @@ AI Engine
     function googleTranslateElementInit() {
     new google.translate.TranslateElement({
         pageLanguage: 'en'
-        // layout: google.translate.TranslateElement.InlineLayout.SIMPLE  ← REMOVE this line
     }, 'google_translate_element');
     document.getElementById('google_translate_element').style.display = 'block';
 }
-
 </script>
 <script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
@@ -151,6 +349,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 });
+
 function validateImage() {
     const fileInput = document.getElementById("actual-btn");
     const file = fileInput.files[0];

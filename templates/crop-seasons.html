@@ -1,0 +1,416 @@
+{% extends 'base.html' %}
+{% block pagetitle %}
+Crop Seasons & Cultivation Guide
+{% endblock pagetitle %}
+{% block body %}
+<style>
+  body {
+    overflow-x: hidden;
+    background-color: #f7f9fc;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+
+  .crop-container {
+    max-width: 1400px;
+    margin: 1rem auto;
+    padding: 0 1rem;
+  }
+
+  .page-header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
+
+  .page-header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #2a3f54;
+    margin-bottom: 0.25rem;
+  }
+
+  .page-header p {
+    font-size: 0.95rem;
+    color: #4b4b4b;
+  }
+
+  .season-filter {
+    display: flex;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    align-items: center;
+  }
+
+  .season-label {
+    font-weight: 600;
+    color: #28a745;
+    font-size: 0.9rem;
+  }
+
+  .season-select {
+    padding: 8px 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    background-color: white;
+    color: #2a3f54;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+
+  .season-select:hover {
+    border-color: #28a745;
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.15);
+  }
+
+  .season-select:focus {
+    outline: none;
+    border-color: #28a745;
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.25);
+  }
+
+  .season-select option {
+    background-color: white;
+    color: #2a3f54;
+    padding: 10px;
+  }
+
+  .season-select option:hover {
+    background-color: #28a745;
+    color: white;
+  }
+
+  #emptyStateMessage {
+    display: none;
+    text-align: center;
+    padding: 1rem 0.75rem;
+    background-color: #f0f8f5;
+    border-radius: 12px;
+    border: 2px dashed #28a745;
+    min-height: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+
+  #emptyStateMessage.show {
+    display: flex;
+  }
+
+  #emptyStateMessage h3 {
+    color: #28a745;
+    font-size: 0.95rem;
+    margin-bottom: 0.15rem;
+    font-weight: 700;
+  }
+
+  #emptyStateMessage p {
+    color: #4b4b4b;
+    font-size: 0.85rem;
+  }
+
+  .crops-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.25rem;
+    margin-bottom: 1.5rem;
+    min-height: 300px;
+  }
+
+  .crop-card {
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    animation: slideUp 0.5s ease forwards;
+    opacity: 0;
+    display: none;
+  }
+
+  .crop-card.visible {
+    display: block;
+    opacity: 1;
+  }
+
+  .crop-card.visible:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .crop-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  }
+
+  .crop-header {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    padding: 1rem;
+    text-align: center;
+  }
+
+  .crop-header h3 {
+    font-size: 1.2rem;
+    margin: 0;
+    font-weight: 700;
+  }
+
+  .crop-content {
+    padding: 1rem;
+  }
+
+  .crop-info-row {
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #eee;
+  }
+
+  .crop-info-row:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+  }
+
+  .info-label {
+    font-weight: 600;
+    color: #28a745;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    margin-bottom: 0.35rem;
+  }
+
+  .info-value {
+    color: #2a3f54;
+    font-size: 0.9rem;
+    line-height: 1.4;
+  }
+
+  .season-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+  }
+
+  .season-badge {
+    display: inline-block;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: white;
+  }
+
+  .spring { background-color: #90EE90; color: #333; }
+  .summer { background-color: #FFD700; color: #333; }
+  .monsoon { background-color: #87CEEB; color: #333; }
+  .autumn { background-color: #FF8C00; color: white; }
+  .winter { background-color: #B0C4DE; color: #333; }
+
+  .best-season {
+    background-color: #28a745 !important;
+    color: white !important;
+  }
+
+  .temperature-range {
+    background-color: #e8f5e9;
+    border-left: 4px solid #28a745;
+    padding: 0.75rem;
+    border-radius: 4px;
+    margin-top: 0.5rem;
+    color: #2a3f54;
+  }
+
+  .best-season-badge {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  .toggle-view {
+    text-align: center;
+    margin-bottom: 2rem;
+    display: none;
+  }
+
+  @media (max-width: 768px) {
+    .page-header h1 {
+      font-size: 2rem;
+    }
+
+    .crops-grid {
+      grid-template-columns: 1fr;
+    }
+
+
+
+    .season-filter {
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .view-toggle-btn {
+      display: none;
+    }
+
+    .season-select {
+      font-size: 0.9rem;
+      padding: 8px 15px;
+      width: 100%;
+    }
+  }
+</style>
+
+<div class="crop-container">
+  <!-- Page Header -->
+  <div class="page-header">
+    <h1>🌾 Crop Cultivation Guide</h1>
+    <p>Discover which crops thrive in which seasons</p>
+  </div>
+
+  <!-- View Toggle -->
+  <div class="toggle-view" style="display: none;">
+    <button class="view-toggle-btn active" onclick="toggleView('table')">📊 Table View</button>
+    <button class="view-toggle-btn" onclick="toggleView('cards')">🎴 Card View</button>
+  </div>
+
+  <!-- Season Filter Dropdown -->
+  <div class="season-filter">
+    <label class="season-label" for="seasonSelect">🌾 Select Season:</label>
+    <select id="seasonSelect" class="season-select" onchange="filterBySeason(this.value)">
+      <option value="">-- Select a Season --</option>
+      <option value="spring">🌱 Spring</option>
+      <option value="summer">☀️ Summer</option>
+      <option value="monsoon">🌧️ Monsoon</option>
+      <option value="autumn">🍂 Autumn</option>
+      <option value="winter">❄️ Winter</option>
+      <option value="all">🌍 All Seasons</option>
+    </select>
+  </div>
+
+  <!-- Empty State Message -->
+  <div id="emptyStateMessage" class="show">
+    <h3>👋 Select a Season</h3>
+    <p>Choose a season from the dropdown above to see crops suitable for cultivation</p>
+  </div>
+
+
+  <!-- Cards View -->
+  <div id="cardsView">
+    <div class="crops-grid">
+      {% for crop in crops %}
+      <div class="crop-card" data-seasons="{% if crop.spring == 'Yes' %}spring {% endif %}{% if crop.summer == 'Yes' %}summer {% endif %}{% if crop.monsoon == 'Yes' %}monsoon {% endif %}{% if crop.autumn == 'Yes' %}autumn {% endif %}{% if crop.winter == 'Yes' %}winter{% endif %}" style="animation-delay: {{ loop.index0 * 0.1 }}s">
+        <div class="crop-header">
+          <h3>{{ crop.crop_name }}</h3>
+        </div>
+        <div class="crop-content">
+          <div class="crop-info-row">
+            <div class="info-label">📅 Available Seasons</div>
+            <div class="season-badges">
+              {% if crop.spring == 'Yes' %}<span class="season-badge spring">Spring</span>{% endif %}
+              {% if crop.summer == 'Yes' %}<span class="season-badge summer">Summer</span>{% endif %}
+              {% if crop.monsoon == 'Yes' %}<span class="season-badge monsoon">Monsoon</span>{% endif %}
+              {% if crop.autumn == 'Yes' %}<span class="season-badge autumn">Autumn</span>{% endif %}
+              {% if crop.winter == 'Yes' %}<span class="season-badge winter">Winter</span>{% endif %}
+            </div>
+          </div>
+
+          <div class="crop-info-row">
+            <div class="info-label">⭐ Best Season for Cultivation</div>
+            <div class="info-value">
+              <span class="best-season-badge">{{ crop.best_season }}</span>
+            </div>
+          </div>
+
+          <div class="crop-info-row">
+            <div class="info-label">⏱️ Growing Period</div>
+            <div class="info-value">{{ crop.growing_period_days }} days</div>
+          </div>
+
+          <div class="crop-info-row">
+            <div class="info-label">🌡️ Ideal Temperature</div>
+            <div class="temperature-range">
+              {{ crop.temperature_range }}
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+</div>
+
+<script>
+  let currentSeason = 'all';
+
+
+
+  function filterBySeason(season) {
+    currentSeason = season;
+    
+    const emptyMsg = document.getElementById('emptyStateMessage');
+    let hasVisibleCrops = false;
+
+    // Filter cards
+    const cropCards = document.querySelectorAll('.crop-card');
+    cropCards.forEach((card, index) => {
+      card.classList.remove('visible');
+      
+      if (season === '') {
+        // No season selected - hide all
+        card.style.display = 'none';
+      } else if (season === 'all') {
+        // Show all
+        card.classList.add('visible');
+        hasVisibleCrops = true;
+        card.style.animation = 'none';
+        setTimeout(() => {
+          card.style.animation = `slideUp 0.5s ease forwards`;
+          card.style.animationDelay = (index * 0.1) + 's';
+        }, 10);
+      } else {
+        const seasons = card.getAttribute('data-seasons').split(' ');
+        if (seasons.includes(season)) {
+          card.classList.add('visible');
+          hasVisibleCrops = true;
+          card.style.animation = 'none';
+          setTimeout(() => {
+            card.style.animation = `slideUp 0.5s ease forwards`;
+            card.style.animationDelay = (index * 0.05) + 's';
+          }, 10);
+        }
+      }
+    });
+
+    // Show/hide empty state message
+    if (season === '') {
+      emptyMsg.classList.add('show');
+    } else {
+      emptyMsg.classList.remove('show');
+    }
+  }
+</script>
+
+{% endblock body %}

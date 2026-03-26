@@ -3,112 +3,367 @@
 {{title}}
 {% endblock pagetitle %}
 {% block body %}
+<style>
+  body {
+    overflow-x: hidden;
+    background-color: #f7f9fc;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
 
-<div>
-  <div class="container">
-    <!-- For demo purpose -->
-    <div class="row mb-5 text-center text-white">
-      <div class="col-lg-10 mx-auto">
-        <h1 class="display-4" style="padding-top: 2%;font-weight: 400;color: rgb(4, 54, 4);""><b>{{title}}🍂</b></h1>
-      </div>
-    </div>
-    <center>
-    <div class=" col">
-          <div class="p-3 bg-white shadow rounded-lg" style="width: 30%;">
+  .result-container {
+    margin: 1rem auto;
+    max-width: 1200px;
+    padding: 0 1rem;
+  }
 
-            <img src={{image_url}} width="350" height="350">
+  .hero-section {
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
 
-          </div>
-      </div>
-      </center>
-      <br>
-      <div class=" row ">
-        <div class="col mx-auto">
-          <div class="p-5 bg-white shadow rounded-lg" style="height: 95%;">
+  .hero-section h1 {
+    font-size: 2rem;
+    font-weight: 600;
+    color: #2a3f54;
+    margin-bottom: 0.5rem;
+  }
 
-            <h5><b>
-                {% if pred==3 or pred==5 or pred==7 or pred==11 or pred==15 or pred==18 or pred==20 or pred==23 or
-                pred==24 or pred==25 or pred==28 or pred==38 %}
-                Tips to Grow Healthy Plants :
-                {% else %}
-                Brief Descritpion :
-                {% endif %}
-              </b></h5>
-            <p>{{desc}}
-            </p>
-          </div>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col mx-auto">
-          <div class="p-5 bg-white shadow rounded-lg" style="height:95%">
-            <h5><b>
-                {% if pred==3 or pred==5 or pred==7 or pred==11 or pred==15 or pred==18 or pred==20 or pred==23 or
-                pred==24 or pred==25 or pred==28 or pred==38 %}
-                Benefits :
-                {% else %}
-                Prevent This Plant Disease By follow below steps :
-                {% endif %}
-              </b></h5>
-            <p>
-              {{prevent}}
-            </p>
-          </div>
-        </div>
+  .accuracy-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    padding: 8px 15px;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+    margin-top: 0.5rem;
+  }
 
-        {% if pred!=4 %}
-        <div class="col mx-auto"">
-        <div class=" p-5 bg-white shadow rounded-lg" style="height: 95%;">
-          <center>
-            <h5><b>
-                {% if pred==3 or pred==5 or pred==7 or pred==11 or pred==15 or pred==18 or pred==20 or pred==23 or
-                pred==24 or pred==25 or pred==28 or pred==38 %}
-                Fertilizer :
-                {% else %}
-                Supplements :
-                {% endif %}
-              </b></h5>
-            <br>
-            <img src={{simage}} width="300" height="350">
-            <br>
-            <br>
-            <h6>{{sname}}</h6>
 
-            <a target="_blank" href={{buy_link}}><button type="button" class="btn btn-success"
-                style="background-color: #05380b;">Buy Product</button></a>
-          </center>
-        </div>
-      </div>
-      {% endif %}
+  .content-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1.25rem;
+    margin-bottom: 1.5rem;
+  }
 
+  .info-card {
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    padding: 1.25rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .info-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  }
+
+  .info-card h5 {
+    font-size: 1.1rem;
+    color: #2a3f54;
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+  }
+
+  .info-card p {
+    color: #555;
+    line-height: 1.6;
+    font-size: 0.85rem;
+  }
+
+  .product-card {
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    padding: 1.25rem;
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  }
+
+  .product-card img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin: 0.75rem 0;
+    max-height: 200px;
+  }
+
+  .product-card .img-fallback {
+    display: none;
+    width: 100%;
+    height: 150px;
+    border-radius: 8px;
+    margin: 0.75rem 0;
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 0.25rem;
+    color: white;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-align: center;
+    padding: 0.75rem;
+    box-sizing: border-box;
+  }
+
+  .product-card img.broken {
+    display: none;
+  }
+
+  .product-card img.broken + .img-fallback {
+    display: flex;
+  }
+
+  .product-card h5 {
+    font-size: 1.1rem;
+    color: #2a3f54;
+    margin: 0.75rem 0;
+    font-weight: 600;
+  }
+
+  .product-card h6 {
+    font-size: 0.85rem;
+    color: #666;
+    margin: 0.35rem 0;
+  }
+
+  .buy-btn {
+    background-color: #28a745;
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 0.75rem;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 0.85rem;
+  }
+
+  .buy-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+  }
+
+  .retry-section {
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    padding: 1.5rem;
+    max-width: 600px;
+    margin: 1.5rem auto;
+    text-align: center;
+  }
+
+  .retry-section h4 {
+    font-size: 1.2rem;
+    color: #2a3f54;
+    margin-bottom: 1rem;
+    font-weight: 600;
+  }
+
+  .retry-section input {
+    display: block;
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 0.75rem;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    font-size: 0.9rem;
+  }
+
+  .retry-section input:focus {
+    outline: none;
+    border-color: #28a745;
+  }
+
+  .retry-btn {
+    background-color: #28a745;
+    color: white;
+    padding: 8px 25px;
+    border: none;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+  }
+
+  .retry-btn:hover {
+    background-color: #218838;
+  }
+
+  .translate-btn {
+    background-color: #0d6efd;
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 1rem;
+    font-size: 0.85rem;
+  }
+
+  .translate-btn:hover {
+    background-color: #0b5ed7;
+  }
+
+  @media (max-width: 968px) {
+    .content-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .content-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .hero-section h1 {
+      font-size: 2rem;
+    }
+
+    .info-card, .product-card {
+      padding: 1.5rem;
+    }
+  }
+</style>
+
+<div class="result-container">
+  <!-- Header -->
+  <div class="hero-section">
+    <h1><b>{{title}} 🍂</b></h1>
+    <div class="accuracy-badge">
+      ✓ Accuracy: {{accuracy}}%
     </div>
   </div>
-  <!-- Add a translation button -->
-  <div class="text-center mt-4">
-    <button onclick="googleTranslateElementInit()" class="btn btn-outline-primary">Translate Page</button>
+
+
+  <!-- Content Grid -->
+  <div class="content-grid">
+    <!-- Description/Tips Card -->
+    <div class="info-card">
+      <h5>
+        {% if pred==3 or pred==5 or pred==7 or pred==11 or pred==15 or pred==18 or pred==20 or pred==23 or pred==24 or pred==25 or pred==28 or pred==38 %}
+        Tips to Grow Healthy Plants
+        {% else %}
+        Brief Description
+        {% endif %}
+      </h5>
+      <p>{{desc}}</p>
+    </div>
+
+    <!-- Prevention/Benefits Card -->
+    <div class="info-card">
+      <h5>
+        {% if pred==3 or pred==5 or pred==7 or pred==11 or pred==15 or pred==18 or pred==20 or pred==23 or pred==24 or pred==25 or pred==28 or pred==38 %}
+        Benefits
+        {% else %}
+        Prevent This Plant Disease
+        {% endif %}
+      </h5>
+      <p>{{prevent}}</p>
+    </div>
+
+    <!-- Product Card (if applicable) -->
+    {% if pred!=4 %}
+    <div class="product-card">
+      <h5>
+        {% if pred==3 or pred==5 or pred==7 or pred==11 or pred==15 or pred==18 or pred==20 or pred==23 or pred==24 or pred==25 or pred==28 or pred==38 %}
+        Recommended Fertilizer
+        {% else %}
+        Recommended Supplement
+        {% endif %}
+      </h5>
+      <img src="{{simage}}" alt="{{sname}}" onerror="this.classList.add('broken')">
+      <div class="img-fallback">
+        <span>🌿</span>
+        <span>{{sname}}</span>
+      </div>
+      <h6>{{sname}}</h6>
+      <button type="button" class="buy-btn" data-product-id="{{ spred }}" data-product-name="{{ sname }}" data-product-price="{{ sprice }}" onclick="buyProductFromDiseaseDetail(event)">Buy Product</button>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Retry Section -->
+  <div class="retry-section">
+    <h4>Try Another Image?</h4>
+    <form action="/submit" method="POST" enctype="multipart/form-data">
+      <input type="file" name="image" id="imageUpload" accept="image/*" required>
+      <button type="submit" class="retry-btn">Detect Disease</button>
+    </form>
+  </div>
+
+  <!-- Translate Button -->
+  <div style="text-align: center;">
+    <button onclick="googleTranslateElementInit()" class="translate-btn">Translate Page</button>
+  </div>
 </div>
-</div>
-</div>
+
+<!-- Buy Product Script -->
+<script>
+  function buyProductFromDiseaseDetail(event) {
+    const btn = event.target;
+    const productId = btn.dataset.productId;
+    const productName = btn.dataset.productName;
+    const price = parseInt(btn.dataset.productPrice);
+    
+    // Get existing cart or create new one
+    let cart = JSON.parse(localStorage.getItem('supplementCart')) || {};
+    
+    // Add or update product in cart
+    if (cart[productId]) {
+      cart[productId].qty += 1;
+    } else {
+      cart[productId] = {
+        id: productId,
+        name: productName,
+        price: price,
+        qty: 1
+      };
+    }
+    
+    // Save to localStorage
+    localStorage.setItem('supplementCart', JSON.stringify(cart));
+    
+    // Show feedback
+    btn.textContent = '✓ Added to Cart!';
+    btn.style.backgroundColor = '#20c997';
+    
+    // Redirect to checkout after a short delay
+    setTimeout(() => {
+      window.location.href = '/checkout';
+    }, 500);
+  }
+</script>
 
 <!-- Google Translate Widget -->
 <script type="text/javascript">
-    function googleTranslateElementInit() {
-    new google.translate.TranslateElement({
-        pageLanguage: 'en'
-        // layout: google.translate.TranslateElement.InlineLayout.SIMPLE  ← REMOVE this line
-    }, 'google_translate_element');
-    document.getElementById('google_translate_element').style.display = 'block';
+function googleTranslateElementInit() {
+  new google.translate.TranslateElement({
+    pageLanguage: 'en'
+  }, 'google_translate_element');
+  document.getElementById('google_translate_element').style.display = 'block';
 }
-
 </script>
 <script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
-
 
 <!-- Google Translate widget container -->
 <div id="google_translate_element" style="display: none; text-align: center; margin-top: 20px;"></div>
 
-<!-- Include Google Translate widget JavaScript -->
-<script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
-
-</div>
 {% endblock body %}

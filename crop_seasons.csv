@@ -1,0 +1,15 @@
+crop_name,spring,summer,monsoon,autumn,winter,best_season,growing_period_days,temperature_range
+Apple,No,No,No,Yes,Yes,Autumn-Winter,150-180,10-25°C
+Blueberry,Yes,Yes,No,Yes,No,Spring-Summer,60-90,15-25°C
+Cherry,No,No,No,Yes,Yes,Autumn-Winter,120-150,5-20°C
+Corn,Yes,Yes,No,No,No,Spring-Summer,70-100,20-30°C
+Grape,No,Yes,Yes,Yes,No,Summer-Monsoon,90-120,20-35°C
+Orange,No,No,Yes,Yes,Yes,Monsoon-Winter,240-365,15-30°C
+Peach,No,No,No,Yes,Yes,Autumn-Winter,100-130,10-25°C
+Pepper,Yes,Yes,Yes,No,No,Spring-Summer,60-90,20-30°C
+Potato,Yes,No,No,Yes,Yes,Spring & Autumn,70-90,15-25°C
+Raspberry,Yes,Yes,No,Yes,No,Spring-Summer,50-80,15-25°C
+Soybean,Yes,Yes,No,No,No,Spring-Summer,80-110,20-30°C
+Squash,Yes,Yes,Yes,No,No,Spring-Monsoon,50-70,20-28°C
+Strawberry,Yes,No,No,Yes,Yes,Spring & Autumn,60-80,15-25°C
+Tomato,Yes,Yes,Yes,No,No,Spring-Monsoon,60-90,20-30°C
