@@ -1,0 +1,273 @@
+{% extends "base.html" %}
+
+{% block title %}Crop Recommendation{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <h1 class="mb-4">🌾 Crop Recommendation</h1>
+            <p class="lead text-muted mb-4">Get crop recommendations based on your local weather and climate conditions</p>
+
+            <!-- Error Message -->
+            {% if error %}
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <strong>❌ Error:</strong> {{ error }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endif %}
+
+            <!-- Search Form -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Find your location</h5>
+                    <form method="POST" id="locationForm">
+                        <div class="input-group mb-3">
+                            <input type="text" class="form-control form-control-lg" 
+                                   id="location" name="location" placeholder="Enter city or region (e.g., 'Mumbai', 'California', 'Delhi')"
+                                   required>
+                            <button class="btn btn-primary btn-lg" type="submit" id="searchBtn">
+                                <span id="btnText">Get Recommendations</span>
+                                <span id="spinner" class="spinner-border spinner-border-sm ms-2 d-none" role="status" aria-hidden="true"></span>
+                            </button>
+                        </div>
+                    </form>
+                    <small class="text-muted">📍 Enter any city name or region worldwide</small>
+                </div>
+            </div>
+
+            <!-- Weather & Recommendations Results -->
+            {% if success and weather %}
+            <div class="card shadow-sm mb-4 border-success">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">✅ Weather Information for {{ location_name }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="weather-stat">
+                                <span class="weather-icon">🌡️</span>
+                                <span class="weather-value">{{ weather.temperature }}°C</span>
+                                <span class="weather-label">Temperature</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="weather-stat">
+                                <span class="weather-icon">💧</span>
+                                <span class="weather-value">{{ weather.humidity }}%</span>
+                                <span class="weather-label">Humidity</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="weather-stat">
+                                <span class="weather-icon">🌧️</span>
+                                <span class="weather-value">{{ weather.precipitation }}mm</span>
+                                <span class="weather-label">Precipitation</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="weather-stat">
+                                <span class="weather-icon">📍</span>
+                                <span class="weather-value">{{ weather.latitude|round(2) }}, {{ weather.longitude|round(2) }}</span>
+                                <span class="weather-label">Coordinates</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Crop Recommendations -->
+            {% if recommendations and recommendations|length > 0 %}
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">🌱 Recommended Crops ({{ recommendations|length }} options)</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for crop in recommendations %}
+                        <div class="col-md-6 mb-4">
+                            <div class="crop-card">
+                                <div class="crop-header">
+                                    <h5>{{ crop.crop_name }}</h5>
+                                    <div class="suitability-score">
+                                        <div class="score-label">Suitability</div>
+                                        <div class="score-bar">
+                                            <div class="score-fill" style="width: {{ crop.suitability_score }}%; background: {% if crop.suitability_score >= 80 %}#28a745{% elif crop.suitability_score >= 60 %}#ffc107{% else %}#dc3545{% endif %};"></div>
+                                        </div>
+                                        <div class="score-value">{{ crop.suitability_score }}%</div>
+                                    </div>
+                                </div>
+                                <div class="crop-details">
+                                    <p><strong>🌡️ Temperature:</strong> {{ crop.temp_range }}</p>
+                                    <p><strong>💧 Humidity:</strong> {{ crop.humidity_preference }}</p>
+                                    <p><strong>📅 Growing Period:</strong> {{ crop.growing_period }} days</p>
+                                    <p><strong>🎯 Best Season:</strong> {{ crop.best_season }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            {% else %}
+            {% if success %}
+            <div class="alert alert-info" role="alert">
+                <strong>ℹ️ Info:</strong> No crops found matching the current weather conditions. This might be due to extreme weather. Check back with different seasons.
+            </div>
+            {% endif %}
+            {% endif %}
+
+            {% endif %}
+
+            <!-- Info Section -->
+            <div class="card mt-4 bg-light">
+                <div class="card-body">
+                    <h5 class="card-title">ℹ️ How it works</h5>
+                    <ul class="mb-0">
+                        <li>Enter your location (city or region)</li>
+                        <li>We fetch real-time weather data using the <strong>Open-Meteo API</strong></li>
+                        <li>Our algorithm matches your climate to suitable crops</li>
+                        <li>Get personalized recommendations for your area</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .weather-stat {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        background: #f8f9fa;
+        text-align: center;
+    }
+
+    .weather-icon {
+        font-size: 32px;
+        margin-bottom: 10px;
+    }
+
+    .weather-value {
+        font-size: 24px;
+        font-weight: bold;
+        color: #28a745;
+        margin-bottom: 5px;
+    }
+
+    .weather-label {
+        font-size: 12px;
+        color: #6c757d;
+        text-transform: uppercase;
+    }
+
+    .crop-card {
+        border: 2px solid #e0e0e0;
+        border-radius: 12px;
+        padding: 20px;
+        background: #fff;
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+
+    .crop-card:hover {
+        border-color: #28a745;
+        box-shadow: 0 4px 12px rgba(40, 167, 69, 0.15);
+        transform: translateY(-2px);
+    }
+
+    .crop-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        border-bottom: 2px solid #f0f0f0;
+        padding-bottom: 10px;
+    }
+
+    .crop-header h5 {
+        margin: 0;
+        font-weight: bold;
+        color: #333;
+    }
+
+    .suitability-score {
+        text-align: center;
+        min-width: 120px;
+    }
+
+    .score-label {
+        font-size: 11px;
+        color: #6c757d;
+        margin-bottom: 5px;
+    }
+
+    .score-bar {
+        width: 100%;
+        height: 6px;
+        background: #e0e0e0;
+        border-radius: 3px;
+        overflow: hidden;
+        margin-bottom: 5px;
+    }
+
+    .score-fill {
+        height: 100%;
+        transition: width 0.3s ease;
+    }
+
+    .score-value {
+        font-size: 14px;
+        font-weight: bold;
+        color: #28a745;
+    }
+
+    .crop-details p {
+        margin-bottom: 8px;
+        font-size: 13px;
+        line-height: 1.4;
+    }
+
+    .crop-details strong {
+        color: #495057;
+    }
+
+    #spinner {
+        margin-left: 8px;
+    }
+
+    @media (max-width: 768px) {
+        .crop-card {
+            margin-bottom: 15px;
+        }
+
+        .crop-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .suitability-score {
+            width: 100%;
+            margin-top: 10px;
+        }
+    }
+</style>
+
+<script>
+    document.getElementById('locationForm').addEventListener('submit', function() {
+        const searchBtn = document.getElementById('searchBtn');
+        const spinner = document.getElementById('spinner');
+        const btnText = document.getElementById('btnText');
+        
+        searchBtn.disabled = true;
+        spinner.classList.remove('d-none');
+        btnText.textContent = 'Searching...';
+    });
+</script>
+
+{% endblock %}

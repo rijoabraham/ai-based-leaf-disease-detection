@@ -1,0 +1,710 @@
+{% extends 'base.html' %}
+{% block pagetitle %}
+Crop Guide & Weather Recommendations
+{% endblock pagetitle %}
+{% block body %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+  body {
+    overflow-x: hidden;
+    background-color: #f7f9fc;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+
+  /* Mobile Notice */
+  .mobile {
+    display: none;
+  }
+
+  @media only screen and (max-width: 830px) {
+    .laptop {
+      display: none;
+    }
+    .mobile {
+      display: block;
+      padding: 5%;
+      text-align: center;
+      background-color: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      margin: 5% auto;
+    }
+    .mobile h1 {
+      color: #ff4c4c;
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+    .mobile p {
+      font-size: 1.1rem;
+      color: #333;
+      margin-bottom: 0.5rem;
+    }
+  }
+
+  .laptop {
+    max-width: 1400px;
+    margin: 1rem auto;
+    padding: 0 1rem;
+  }
+
+  .page-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .page-header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #2a3f54;
+    margin-bottom: 0.5rem;
+  }
+
+  .page-header p {
+    font-size: 0.95rem;
+    color: #4b4b4b;
+  }
+
+  /* Weather Search Section */
+  .weather-section {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .weather-section h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+  }
+
+  .search-form {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .search-form input {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+
+  .search-form input:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+  }
+
+  .search-form button {
+    padding: 0.75rem 1.5rem;
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 2px solid white;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+  }
+
+  .search-form button:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  .search-form button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  /* Weather Stats */
+  .weather-stats {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 2px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .weather-stats h3 {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+  }
+
+  .stat-card {
+    background-color: rgba(255, 255, 255, 0.15);
+    padding: 1rem;
+    border-radius: 8px;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+  }
+
+  .stat-label {
+    font-size: 0.85rem;
+    opacity: 0.9;
+  }
+
+  /* Recommendations */
+  .recommendations-section {
+    margin-bottom: 2rem;
+  }
+
+  .section-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #2a3f54;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 3px solid #28a745;
+    display: inline-block;
+  }
+
+  .crops-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.25rem;
+    margin-bottom: 2rem;
+  }
+
+  .crop-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    border-left: 4px solid #28a745;
+  }
+
+  .crop-card:hover {
+    box-shadow: 0 6px 16px rgba(40, 167, 69, 0.15);
+    transform: translateY(-4px);
+  }
+
+  .crop-name {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #2a3f54;
+    margin-bottom: 0.75rem;
+  }
+
+  .crop-info {
+    font-size: 0.9rem;
+    color: #4b4b4b;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .crop-info strong {
+    color: #28a745;
+    min-width: 100px;
+  }
+
+  .suitability-bar {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e0e0e0;
+  }
+
+  .suitability-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #28a745;
+    margin-bottom: 0.5rem;
+  }
+
+  .progress-bar-container {
+    width: 100%;
+    height: 6px;
+    background-color: #e0e0e0;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #28a745 0%, #20c997 100%);
+    border-radius: 3px;
+    transition: width 0.3s ease;
+  }
+
+  .suitability-value {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #28a745;
+    margin-top: 0.5rem;
+  }
+
+  /* Crop Calendar Table */
+  .calendar-section {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    overflow-x: auto;
+  }
+
+  .calendar-section h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #2a3f54;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 3px solid #28a745;
+    display: inline-block;
+  }
+
+  .season-filter {
+    display: flex;
+    justify-content: flex-start;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    align-items: center;
+  }
+
+  .season-label {
+    font-weight: 600;
+    color: #28a745;
+    font-size: 0.9rem;
+  }
+
+  .season-select {
+    padding: 8px 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    background-color: white;
+    color: #2a3f54;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+
+  .season-select:hover {
+    border-color: #28a745;
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.15);
+  }
+
+  .season-select:focus {
+    outline: none;
+    border-color: #28a745;
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.25);
+  }
+
+  .season-select option {
+    background-color: white;
+    color: #2a3f54;
+    padding: 10px;
+  }
+
+  .crop-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+    display: none;
+  }
+
+  .crop-table.visible {
+    display: table;
+  }
+
+  .crop-table thead {
+    background-color: #028644;
+    color: white;
+  }
+
+  .crop-table th {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+
+  .crop-table td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #e0e0e0;
+    font-size: 0.9rem;
+  }
+
+  .crop-table tbody tr:hover {
+    background-color: #f0f8f5;
+  }
+
+  .crop-table tbody tr:nth-child(even) {
+    background-color: #fafcfb;
+  }
+
+  .badge-yes {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    padding: 0.3rem 0.6rem;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 0.8rem;
+  }
+
+  .badge-no {
+    display: inline-block;
+    background-color: #e0e0e0;
+    color: #666;
+    padding: 0.3rem 0.6rem;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 0.8rem;
+  }
+
+  .alert {
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    font-size: 0.95rem;
+  }
+
+  .alert-error {
+    background-color: #fff3cd;
+    border-left: 4px solid #ff4c4c;
+    color: #333;
+  }
+
+  .alert-empty {
+    background-color: #f0f8f5;
+    border-left: 4px solid #28a745;
+    color: #2a3f54;
+  }
+
+  @media (max-width: 768px) {
+    .search-form {
+      flex-direction: column;
+    }
+
+    .stats-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .crops-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .crop-table {
+      font-size: 0.8rem;
+    }
+
+    .crop-table th,
+    .crop-table td {
+      padding: 0.5rem 0.75rem;
+    }
+  }
+</style>
+
+<div class="mobile">
+  <h1>Crop Guide</h1>
+  <p>Please use a desktop or tablet to access the full Crop Guide with weather recommendations and planting calendar.</p>
+</div>
+
+<div class="laptop">
+  <!-- Header -->
+  <div class="page-header">
+    <h1>🌾 Crop Guide</h1>
+    <p>Get weather-based crop recommendations and view the complete planting calendar</p>
+  </div>
+
+  <!-- Error Message -->
+  {% if error %}
+  <div class="alert alert-error">
+    <strong>⚠️ Error:</strong> {{ error }}
+  </div>
+  {% endif %}
+
+  <!-- Weather Search Section -->
+  <div class="weather-section">
+    <h2>🌍 Get Crops for Your Location</h2>
+    <form method="POST" id="locationForm">
+      <div class="search-form">
+        <input type="text" name="location" id="location" placeholder="Enter city or region (e.g., Mumbai, California, Delhi)" required>
+        <button type="submit" id="searchBtn">Get Recommendations</button>
+      </div>
+    </form>
+    <small style="opacity: 0.9;">📍 Enter any city name or region worldwide. We'll fetch real-time weather data and recommend suitable crops.</small>
+
+    <!-- Map for selecting location -->
+    <div id="mapContainer" style="margin-top: 1rem; border-radius: 8px; overflow: hidden; height: 300px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);">
+      <div id="map" style="width: 100%; height: 100%;"></div>
+    </div>
+    <small style="opacity: 0.9; display: block; margin-top: 0.5rem;">💡 Tip: Click on the map to select a region, or search by city name above</small>
+
+    <!-- Weather Stats (shown after search) -->
+    {% if success and weather %}
+    <div class="weather-stats">
+      <h3>Current Weather Conditions</h3>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value">{{ weather.temperature }}°C</div>
+          <div class="stat-label">🌡️ Temperature</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">{{ weather.humidity }}%</div>
+          <div class="stat-label">💧 Humidity</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">{{ weather.precipitation }}mm</div>
+          <div class="stat-label">🌧️ Precipitation</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">{{ location_name }}</div>
+          <div class="stat-label">📍 Location</div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Recommendations -->
+  {% if success and weather %}
+  {% if recommendations and recommendations|length > 0 %}
+  <div class="recommendations-section">
+    <div class="section-title">🌱 Recommended Crops ({{ recommendations|length }} options)</div>
+    <div class="crops-grid">
+      {% for crop in recommendations %}
+      <div class="crop-card">
+        <div class="crop-name">{{ crop.crop_name }}</div>
+        <div class="crop-info">
+          <strong>🌡️ Temperature:</strong> <span>{{ crop.temp_range }}</span>
+        </div>
+        <div class="crop-info">
+          <strong>💧 Humidity:</strong> <span>{{ crop.humidity_preference }}</span>
+        </div>
+        <div class="crop-info">
+          <strong>📅 Growing:</strong> <span>{{ crop.growing_period }} days</span>
+        </div>
+        <div class="crop-info">
+          <strong>🎯 Best Season:</strong> <span>{{ crop.best_season }}</span>
+        </div>
+        <div class="suitability-bar">
+          <div class="suitability-label">Suitability Score</div>
+          <div class="progress-bar-container">
+            <div class="progress-bar" style="width: {{ crop.suitability_score }}%"></div>
+          </div>
+          <div class="suitability-value">{{ crop.suitability_score }}%</div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% else %}
+  {% if success %}
+  <div class="alert alert-empty">
+    <strong>ℹ️ Info:</strong> No crops found matching the current weather conditions. This might be due to extreme weather. Try a different location or season.
+  </div>
+  {% endif %}
+  {% endif %}
+  {% endif %}
+
+  <!-- Crop Calendar Section -->
+  <div class="calendar-section">
+    <h2>📅 Complete Crop Planting Calendar</h2>
+    <p style="color: #4b4b4b; margin-bottom: 1rem;">View all crops with their optimal growing seasons and temperature requirements</p>
+    
+    <!-- Season Filter -->
+    <div class="season-filter">
+      <label class="season-label" for="seasonSelect">🌾 Select Season:</label>
+      <select id="seasonSelect" class="season-select" onchange="filterCalendarBySeason(this.value)">
+        <option value="">-- All Seasons --</option>
+        <option value="spring">🌱 Spring</option>
+        <option value="summer">☀️ Summer</option>
+        <option value="monsoon">🌧️ Monsoon</option>
+        <option value="autumn">🍂 Autumn</option>
+        <option value="winter">❄️ Winter</option>
+      </select>
+    </div>
+
+    <!-- Empty State Message -->
+    <div id="emptyCalendarMessage" style="display: block; text-align: center; padding: 2rem; background-color: #f0f8f5; border-radius: 12px; border: 2px dashed #28a745; margin-bottom: 1rem;">
+      <h3 style="color: #28a745; margin-bottom: 0.5rem;">👋 Select a Season</h3>
+      <p style="color: #4b4b4b;">Choose a season from the dropdown above to view crops suitable for that season</p>
+    </div>
+
+    <div style="overflow-x: auto;">
+      <table class="crop-table" id="cropTable">
+        <thead>
+          <tr>
+            <th>Crop Name</th>
+            <th>Best Season</th>
+            <th>Temperature</th>
+            <th>Growing Period</th>
+            <th>Spring</th>
+            <th>Summer</th>
+            <th>Monsoon</th>
+            <th>Autumn</th>
+            <th>Winter</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for crop in crops %}
+          <tr class="crop-row" data-seasons="{% if crop.spring == 'Yes' %}spring {% endif %}{% if crop.summer == 'Yes' %}summer {% endif %}{% if crop.monsoon == 'Yes' %}monsoon {% endif %}{% if crop.autumn == 'Yes' %}autumn {% endif %}{% if crop.winter == 'Yes' %}winter{% endif %}">
+            <td><strong>{{ crop.crop_name }}</strong></td>
+            <td><span class="badge-yes">{{ crop.best_season }}</span></td>
+            <td>{{ crop.temperature_range }}</td>
+            <td>{{ crop.growing_period_days }} days</td>
+            <td>{% if crop.spring == 'Yes' %}<span class="badge-yes">✓</span>{% else %}<span class="badge-no">✗</span>{% endif %}</td>
+            <td>{% if crop.summer == 'Yes' %}<span class="badge-yes">✓</span>{% else %}<span class="badge-no">✗</span>{% endif %}</td>
+            <td>{% if crop.monsoon == 'Yes' %}<span class="badge-yes">✓</span>{% else %}<span class="badge-no">✗</span>{% endif %}</td>
+            <td>{% if crop.autumn == 'Yes' %}<span class="badge-yes">✓</span>{% else %}<span class="badge-no">✗</span>{% endif %}</td>
+            <td>{% if crop.winter == 'Yes' %}<span class="badge-yes">✓</span>{% else %}<span class="badge-no">✗</span>{% endif %}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // Initialize Leaflet Map
+  let map;
+  let marker;
+
+  function initMap() {
+    map = L.map('map').setView([20, 78], 4); // Center on India
+    
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors',
+      maxZoom: 19
+    }).addTo(map);
+
+    // Handle map clicks
+    map.on('click', function(e) {
+      const lat = e.latlng.lat;
+      const lng = e.latlng.lng;
+      
+      // Remove previous marker
+      if (marker) {
+        map.removeLayer(marker);
+      }
+      
+      // Add new marker
+      marker = L.marker([lat, lng]).addTo(map)
+        .bindPopup('📍 Selected Location<br>Lat: ' + lat.toFixed(2) + ', Lng: ' + lng.toFixed(2))
+        .openPopup();
+      
+      // Reverse geocode to get location name
+      reverseGeocode(lat, lng);
+    });
+  }
+
+  function reverseGeocode(lat, lng) {
+    // Use Nominatim (OpenStreetMap) for reverse geocoding - converts coordinates to place names
+    const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=10&addressdetails=1`;
+    
+    fetch(url, {
+      headers: {
+        'Accept': 'application/json'
+      }
+    })
+      .then(response => response.json())
+      .then(data => {
+        let locationName = '';
+        
+        if (data.address) {
+          // Try to build a meaningful location name
+          const addr = data.address;
+          locationName = addr.city || addr.town || addr.village || addr.hamlet || addr.county || addr.state || data.name || 'Selected Location';
+          
+          // Add country if available
+          if (addr.country) {
+            locationName = locationName + ', ' + addr.country;
+          }
+        } else if (data.name) {
+          locationName = data.name;
+        }
+        
+        if (locationName) {
+          console.log('Reverse geocoded location:', locationName);
+          document.getElementById('location').value = locationName;
+          
+          // Click the search button to trigger form submission
+          setTimeout(() => {
+            document.getElementById('searchBtn').click();
+          }, 300);
+        } else {
+          console.log('Could not get location name from coordinates');
+        }
+      })
+      .catch(error => console.log('Reverse geocoding error:', error));
+  }
+
+  // Initialize map when page loads
+  document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(initMap, 100);
+  });
+
+  document.getElementById('locationForm').addEventListener('submit', function() {
+    const searchBtn = document.getElementById('searchBtn');
+    const spinner = document.getElementById('spinner');
+    const btnText = document.getElementById('btnText');
+    
+    searchBtn.disabled = true;
+    spinner.classList.remove('d-none');
+    btnText.textContent = 'Searching...';
+  });
+
+  // Filter crops by season in calendar
+  function filterCalendarBySeason(season) {
+    const cropTable = document.getElementById('cropTable');
+    const cropRows = document.querySelectorAll('.crop-row');
+    const emptyMsg = document.getElementById('emptyCalendarMessage');
+    let visibleCount = 0;
+
+    if (season === '') {
+      // No season selected - hide table and show prompt
+      cropTable.classList.remove('visible');
+      emptyMsg.style.display = 'block';
+      emptyMsg.innerHTML = '<h3 style="color: #28a745; margin-bottom: 0.5rem;">👋 Select a Season</h3><p style="color: #4b4b4b;">Choose a season from the dropdown above to view crops suitable for that season</p>';
+      cropRows.forEach(row => row.style.display = 'none');
+    } else {
+      // Season selected - show table and filter rows
+      cropTable.classList.add('visible');
+      
+      cropRows.forEach(row => {
+        const seasonData = row.getAttribute('data-seasons').split(' ').filter(s => s);
+        if (seasonData.includes(season)) {
+          row.style.display = '';
+          visibleCount++;
+        } else {
+          row.style.display = 'none';
+        }
+      });
+
+      // Show/hide empty message based on results
+      if (visibleCount === 0) {
+        emptyMsg.style.display = 'block';
+        emptyMsg.innerHTML = '<h3 style="color: #28a745; margin-bottom: 0.5rem;">❌ No crops found</h3><p style="color: #4b4b4b;">No crops are available for the selected season. Please try another season.</p>';
+        cropTable.classList.remove('visible');
+      } else {
+        emptyMsg.style.display = 'none';
+      }
+    }
+  }
+</script>
+
+{% endblock body %}

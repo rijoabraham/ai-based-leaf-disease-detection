@@ -1,5 +1,5 @@
 from pathlib import Path
-from flask import Flask, redirect, render_template, request
+from flask import Flask, redirect, render_template, request, jsonify
 from PIL import Image
 import torchvision.transforms.functional as TF
 import CNN
@@ -10,6 +10,7 @@ import os
 import urllib.request
 import gdown
 import time
+from weather_service import WeatherService, classify_climate_zone, get_rainfall_type
 # ========== Google Drive Auto Model Download ==========
 
 model_path = "plant_disease_model_1_latest.pt"
@@ -58,6 +59,7 @@ def prediction(image_path):
     
     index = np.argmax(output)
     accuracy = float(probabilities[0][index]) * 100  # Convert to percentage
+    accuracy = min(accuracy, 95)  # Limit accuracy to 95%
     return index, round(accuracy, 2)
 
 # Initialize Flask app
@@ -113,10 +115,8 @@ def market():
 
 @app.route('/crop-seasons')
 def crop_seasons_page():
-    global crop_seasons
-    crop_seasons = pd.read_csv(BASE_DIR / "crop_seasons.csv")
-    crop_data = crop_seasons.to_dict('records')
-    return render_template('crop-seasons.html', crops=crop_data)
+    """Redirect old crop seasons page to new crop guide page"""
+    return redirect('/crop-guide')
 
 @app.route('/checkout')
 def checkout():
@@ -130,7 +130,135 @@ def shipping_payment():
 def track_order():
     return render_template('track-order.html')
 
-# Handling 404 error
+# ============ CROP RECOMMENDATION BASED ON WEATHER ============
+
+def get_crop_recommendations(weather_data, crop_seasons_df):
+    """
+    Recommend crops based on current weather conditions
+    """
+    if not weather_data:
+        return None
+    
+    temp = weather_data['temperature']
+    humidity = weather_data['humidity']
+    
+    recommended_crops = []
+    
+    for idx, crop in crop_seasons_df.iterrows():
+        crop_name = crop['crop_name']
+        temp_range = crop['temperature_range']
+        
+        # Parse temperature range (e.g., "10-25°C")
+        try:
+            temp_min, temp_max = map(int, temp_range.replace('°C', '').split('-'))
+            
+            # Score based on temperature match
+            if temp_min <= temp <= temp_max:
+                temp_score = 100
+            elif temp < temp_min:
+                temp_score = max(0, 80 - (temp_min - temp) * 5)
+            else:
+                temp_score = max(0, 80 - (temp - temp_max) * 5)
+            
+            # Humidity bonus for certain crops (most crops prefer 60-80%)
+            if 40 <= humidity <= 90:
+                humidity_score = 100
+            else:
+                humidity_score = max(0, 100 - abs(humidity - 65) * 2)
+            
+            # Overall suitability score
+            suitability_score = (temp_score * 0.7) + (humidity_score * 0.3)
+            
+            if suitability_score >= 60:  # Only recommend if suitable
+                recommended_crops.append({
+                    'crop_name': crop_name,
+                    'suitability_score': round(suitability_score, 1),
+                    'temp_range': temp_range,
+                    'growing_period': crop['growing_period_days'],
+                    'best_season': crop['best_season'],
+                    'humidity_preference': '60-80%'
+                })
+        except:
+            continue
+    
+    # Sort by suitability score
+    recommended_crops.sort(key=lambda x: x['suitability_score'], reverse=True)
+    
+    return recommended_crops
+
+@app.route('/crop-recommendation', methods=['GET', 'POST'])
+def crop_recommendation():
+    """Recommend crops based on location weather"""
+    global crop_seasons
+    
+    if request.method == 'POST':
+        location = request.form.get('location', '').strip()
+        
+        if not location:
+            return render_template('crop-recommendation.html', 
+                                 error="Please enter a location")
+        
+        # Get weather data
+        weather_data = WeatherService.get_weather_summary(location)
+        
+        if not weather_data:
+            return render_template('crop-recommendation.html', 
+                                 error=f"Could not find weather data for '{location}'. Try a city name or region.")
+        
+        # Get crop recommendations
+        crop_seasons = pd.read_csv(BASE_DIR / "crop_seasons.csv")
+        recommendations = get_crop_recommendations(weather_data, crop_seasons)
+        
+        return render_template('crop-recommendation.html',
+                             weather=weather_data,
+                             recommendations=recommendations,
+                             location_name=weather_data['location'],
+                             success=True)
+    
+    return render_template('crop-recommendation.html')
+
+# ============ UNIFIED CROP GUIDE PAGE ============
+
+@app.route('/crop-guide', methods=['GET', 'POST'])
+def crop_guide():
+    """Unified page with crop recommendations and calendar"""
+    global crop_seasons
+    
+    crop_seasons = pd.read_csv(BASE_DIR / "crop_seasons.csv")
+    crop_data = crop_seasons.to_dict('records')
+    
+    weather = None
+    recommendations = None
+    location_name = None
+    error = None
+    success = False
+    
+    if request.method == 'POST':
+        location = request.form.get('location', '').strip()
+        
+        if not location:
+            error = "Please enter a location"
+        else:
+            # Get weather data
+            weather_data = WeatherService.get_weather_summary(location)
+            
+            if not weather_data:
+                error = f"Could not find weather data for '{location}'. Try a city name or region."
+            else:
+                weather = weather_data
+                recommendations = get_crop_recommendations(weather_data, crop_seasons)
+                location_name = weather_data['location']
+                success = True
+    
+    return render_template('crop-guide.html',
+                         weather=weather,
+                         recommendations=recommendations,
+                         location_name=location_name,
+                         error=error,
+                         success=success,
+                         crops=crop_data)
+
+# ============================================================
 
 @app.errorhandler(404)
 def handle_404(e):
