@@ -196,23 +196,38 @@ def crop_recommendation():
         
         if not location:
             return render_template('crop-recommendation.html', 
-                                 error="Please enter a location")
+                                 error="Please enter a location (e.g., 'Delhi', 'Mumbai, India')")
         
-        # Get weather data
+        # Get weather data with improved error handling
         weather_data = WeatherService.get_weather_summary(location)
         
         if not weather_data:
+            # Try to get location suggestions
+            suggestions = WeatherService.get_all_matches(location)
+            suggestions_text = ""
+            if suggestions:
+                suggestions_text = "Did you mean: " + ", ".join([s['display_name'] for s in suggestions[:5]])
+            
+            error_msg = f"❌ Location '{location}' not found. {suggestions_text if suggestions_text else 'Please try another location (e.g., city name, region, or city, country).'}"
             return render_template('crop-recommendation.html', 
-                                 error=f"Could not find weather data for '{location}'. Try a city name or region.")
+                                 error=error_msg,
+                                 suggestions=suggestions)
         
         # Get crop recommendations
         crop_seasons = pd.read_csv(BASE_DIR / "crop_seasons.csv")
         recommendations = get_crop_recommendations(weather_data, crop_seasons)
         
+        # Format weather data for display
+        location_display = f"{weather_data['location']}"
+        if weather_data.get('admin1'):
+            location_display += f", {weather_data['admin1']}"
+        if weather_data.get('country'):
+            location_display += f", {weather_data['country']}"
+        
         return render_template('crop-recommendation.html',
                              weather=weather_data,
                              recommendations=recommendations,
-                             location_name=weather_data['location'],
+                             location_name=location_display,
                              success=True)
     
     return render_template('crop-recommendation.html')
@@ -232,22 +247,36 @@ def crop_guide():
     location_name = None
     error = None
     success = False
+    suggestions = None
     
     if request.method == 'POST':
         location = request.form.get('location', '').strip()
         
         if not location:
-            error = "Please enter a location"
+            error = "Please enter a location (e.g., 'Delhi', 'Mumbai, India')"
         else:
-            # Get weather data
+            # Get weather data with improved error handling
             weather_data = WeatherService.get_weather_summary(location)
             
             if not weather_data:
-                error = f"Could not find weather data for '{location}'. Try a city name or region."
+                # Try to get location suggestions
+                suggestions = WeatherService.get_all_matches(location)
+                error_msg = f"❌ Location '{location}' not found."
+                if suggestions:
+                    error_msg += " Did you mean: " + ", ".join([s['display_name'] for s in suggestions[:5]])
+                error = error_msg
             else:
                 weather = weather_data
                 recommendations = get_crop_recommendations(weather_data, crop_seasons)
-                location_name = weather_data['location']
+                
+                # Format location name
+                location_display = f"{weather_data['location']}"
+                if weather_data.get('admin1'):
+                    location_display += f", {weather_data['admin1']}"
+                if weather_data.get('country'):
+                    location_display += f", {weather_data['country']}"
+                
+                location_name = location_display
                 success = True
     
     return render_template('crop-guide.html',
@@ -256,6 +285,7 @@ def crop_guide():
                          location_name=location_name,
                          error=error,
                          success=success,
+                         suggestions=suggestions,
                          crops=crop_data)
 
 # ============================================================

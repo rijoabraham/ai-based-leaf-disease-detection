@@ -11,11 +11,46 @@ class WeatherService:
     
     @staticmethod
     def get_coordinates(location_name):
-        """Convert location name to latitude and longitude"""
+        """Convert location name to latitude and longitude with multiple fallback strategies"""
+        try:
+            # Strategy 1: Try exact location name
+            result = WeatherService._search_location(location_name)
+            if result:
+                return result
+            
+            # Strategy 2: Try location with common country codes added
+            if ',' not in location_name:  # No country specified
+                for country_hint in [', India', ', USA', ', UK', ', Global']:
+                    result = WeatherService._search_location(location_name + country_hint)
+                    if result:
+                        return result
+            
+            # Strategy 3: Try first word only (in case of multi-word failure)
+            first_word = location_name.split()[0]
+            if len(first_word) > 2:
+                result = WeatherService._search_location(first_word)
+                if result:
+                    return result
+            
+            # Strategy 4: Try with multiple results and pick the best
+            result = WeatherService._search_location(location_name, count=5)
+            if result:
+                return result
+            
+            print(f"Could not find location: {location_name}")
+            return None
+            
+        except Exception as e:
+            print(f"Error in geocoding: {e}")
+            return None
+    
+    @staticmethod
+    def _search_location(location_name, count=1):
+        """Internal method to search for a single location"""
         try:
             params = {
                 "name": location_name,
-                "count": 1,
+                "count": count,
                 "language": "en",
                 "format": "json"
             }
@@ -29,13 +64,43 @@ class WeatherService:
                     'latitude': result['latitude'],
                     'longitude': result['longitude'],
                     'name': result.get('name', location_name),
+                    'admin1': result.get('admin1', ''),
                     'country': result.get('country', ''),
                     'timezone': result.get('timezone', 'UTC')
                 }
             return None
         except Exception as e:
-            print(f"Error in geocoding: {e}")
             return None
+    
+    @staticmethod
+    def get_all_matches(location_name):
+        """Get all matching locations for a given search term"""
+        try:
+            params = {
+                "name": location_name,
+                "count": 10,
+                "language": "en",
+                "format": "json"
+            }
+            response = requests.get(WeatherService.GEOCODING_URL, params=params, timeout=5)
+            response.raise_for_status()
+            data = response.json()
+            
+            matches = []
+            if 'results' in data:
+                for result in data['results']:
+                    matches.append({
+                        'name': result.get('name', ''),
+                        'admin1': result.get('admin1', ''),
+                        'country': result.get('country', ''),
+                        'latitude': result['latitude'],
+                        'longitude': result['longitude'],
+                        'display_name': f"{result.get('name', '')}, {result.get('admin1', '')}, {result.get('country', '')}"
+                    })
+            return matches
+        except Exception as e:
+            print(f"Error fetching location matches: {e}")
+            return []
     
     @staticmethod
     def get_current_weather(latitude, longitude):
@@ -71,6 +136,7 @@ class WeatherService:
         
         return {
             'location': coords['name'],
+            'admin1': coords.get('admin1', ''),
             'country': coords['country'],
             'latitude': coords['latitude'],
             'longitude': coords['longitude'],
