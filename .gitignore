@@ -19,3 +19,10 @@ Thumbs.db
 *.dll
 *.lib
 *.exe
+
+# Image files
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
